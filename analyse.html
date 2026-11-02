@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Analyse">
+    <title>Analyseur Texte - Billard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #444;
+        }
+        h1 { font-size: 1.8em; color: #4a9eff; }
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        a.navlink { color: #4a9eff; text-decoration: none; font-weight: 600; padding: 10px 6px; }
+        a.navlink:hover { text-decoration: underline; }
+        #status { min-height: 1.4em; margin: -14px 0 14px 0; font-size: 0.9em; color: #8bc48b; }
+        #status.err { color: #ff8888; }
+        @media (max-width: 900px) {
+            body { padding: 12px; }
+            header { flex-direction: column; align-items: flex-start; gap: 14px; }
+            h1 { font-size: 1.4em; }
+            .report { font-size: 11px; padding: 14px; }
+        }
+        button {
+            padding: 12px 18px;
+            background: #4a9eff;
+            color: #1e1e1e;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        button:hover { background: #2e7ecf; }
+        input[type="file"] { display: none; }
+        .report {
+            background: #252526;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 30px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .error {
+            background: #5a2c2c;
+            color: #ff8888;
+            padding: 20px;
+            border-radius: 4px;
+            border-left: 4px solid #ff4444;
+            margin: 20px 0;
+        }
+        .no-data { text-align: center; padding: 40px; color: #666; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🎱 Analyseur Texte - Billard</h1>
+        <div class="controls">
+            <a class="navlink" href="index.html">← Tracker</a>
+            <button type="button" onclick="loadFromTracker(false)">🎱 Données du tracker</button>
+            <button type="button" onclick="document.getElementById('jsonFile').click()">📂 Importer JSON</button>
+            <button type="button" onclick="saveReport()">💾 Enregistrer .txt</button>
+            <button type="button" onclick="copyReport()">📋 Copier</button>
+        </div>
+    </header>
+    <div id="status" role="status"></div>
+    <input type="file" id="jsonFile" accept=".json,application/json,text/plain" onchange="loadJSON(event)">
+    <div id="content">
+        <div class="no-data">
+            <span style="font-size:2em;margin-bottom:10px;display:block;">📂</span>
+            Aucune partie trouvée dans le tracker. Importez un fichier JSON pour générer l'analyse.
+        </div>
+    </div>
+</div>
+
+<script>
+let currentReport = '';
+let data = null;
+
+function setStatus(msg, isErr) {
+    const el = document.getElementById('status');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = isErr ? 'err' : '';
+}
+
+function loadJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const parsed = JSON.parse(e.target.result);
+            if (!parsed.matches || !parsed.players) { showError('Format JSON invalide'); return; }
+            data = parsed;
+            generateReport();
+            setStatus('Fichier importé : ' + file.name + ' (' + data.matches.length + ' parties)');
+        } catch (err) { showError('Erreur: ' + err.message); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// Lit directement les parties enregistrées par le tracker (même site, même navigateur)
+function loadFromTracker(silent) {
+    try {
+        const p = JSON.parse(localStorage.getItem('billard_players') || 'null');
+        const m = JSON.parse(localStorage.getItem('billard_matches') || 'null');
+        if (!p || !p.player1 || !p.player2 || !Array.isArray(m) || !m.length) {
+            if (!silent) showError('Aucune partie trouvée dans le tracker sur cet appareil. Importez un fichier JSON.');
+            return false;
+        }
+        data = { players: p, matches: m };
+        generateReport();
+        setStatus('Données du tracker : ' + p.player1 + ' / ' + p.player2 + ' (' + m.length + ' parties)');
+        return true;
+    } catch (err) {
+        if (!silent) showError('Lecture impossible : ' + err.message);
+        return false;
+    }
+}
+
+// ─── utilitaires ─────────────────────────────────────────────────────────────
+
+const SEP  = '='.repeat(120);
+const SEP2 = '─'.repeat(120);
+
+function pad(str, w, right=false) {
+    str = String(str);
+    return right ? str.padStart(w) : str.padEnd(w);
+}
+
+function fmt(n, dec=1) { return n.toFixed(dec); }
+
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+
+function stddev(arr) {
+    if (arr.length < 2) return 0;
+    const m = avg(arr);
+    return Math.sqrt(arr.reduce((s,x)=>s+(x-m)**2,0)/arr.length);
+}
+
+function parseDate(str) {
+    // dd/mm/yyyy
+    const p = str.split('/');
+    if (p.length === 3) return new Date(+p[2], +p[1]-1, +p[0]);
+    return new Date(str);
+}
+
+// ─── clés joueurs (indépendant des noms) ─────────────────────────────────────
+
+// "JEAN LUC" -> "jeanLuc", "FRANÇOIS" -> "francois"
+function toKey(name) {
+    const w = String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().split(/\s+/);
+    return w.map((x,i)=> i ? x.charAt(0).toUpperCase()+x.slice(1) : x).join('');
+}
+
+// Retrouve les clés des 2 joueurs dans un objet (bestSeries, reprise…)
+function pKeys(obj, p1, p2) {
+    if (!obj) return [null, null];
+    const ks = Object.keys(obj).filter(k => k !== 'num');
+    const k1 = toKey(p1), k2 = toKey(p2);
+    if (ks.includes(k1) && ks.includes(k2)) return [k1, k2];
+    return [ks[0], ks[1]];
+}
+
+// Fonction de répartition de la loi normale (approximation d'Abramowitz-Stegun)
+function normCdf(z) {
+    const t = 1/(1+0.2316419*Math.abs(z));
+    const d = 0.3989423*Math.exp(-z*z/2);
+    const p = d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+    return z > 0 ? 1-p : p;
+}
+
+// p-value bilatérale d'un écart de victoires par rapport à 50/50 (approx. normale)
+function pValueEven(wins, n) {
+    if (!n) return 1;
+    const z = (Math.abs(wins - n/2) - 0.5) / (Math.sqrt(n)/2);
+    return z <= 0 ? 1 : 2*(1 - normCdf(z));
+}
+
+// ─── stats de base ───────────────────────────────────────────────────────────
+
+function calcStats(matches, p1, p2) {
+    let p1Wins=0, p2Wins=0;
+    let p1Pts=0, p2Pts=0;
+    let p1AvgSum=0, p2AvgSum=0;
+    let p1Scores=[], p2Scores=[];
+    let p1BestSeries=[], p2BestSeries=[];
+    let p1ZeroReprises=0, p2ZeroReprises=0;
+    let totalReprises=0;
+    let durations=[];
+
+    matches.forEach(m => {
+        if (m.winner === p1) p1Wins++;
+        if (m.winner === p2) p2Wins++;
+        p1Pts += m.s1; p2Pts += m.s2;
+        p1Scores.push(m.s1); p2Scores.push(m.s2);
+
+        const rc = m.reprisesCount || (Array.isArray(m.reprises) ? m.reprises.length : m.reprises || 1);
+        if (rc > 0) {
+            p1AvgSum += m.s1/rc;
+            p2AvgSum += m.s2/rc;
+        }
+
+        // reprises détaillées
+        if (Array.isArray(m.reprises) && m.reprises.length) {
+            totalReprises += m.reprises.length;
+            const [rk1, rk2] = pKeys(m.reprises[0], p1, p2);
+            m.reprises.forEach(r => {
+                if ((r[rk1]||0) === 0) p1ZeroReprises++;
+                if ((r[rk2]||0) === 0) p2ZeroReprises++;
+            });
+        }
+
+        // meilleures séries
+        if (m.bestSeries) {
+            const [bk1, bk2] = pKeys(m.bestSeries, p1, p2);
+            const bs1 = m.bestSeries[bk1];
+            const bs2 = m.bestSeries[bk2];
+            if (Array.isArray(bs1) && bs1.length) p1BestSeries.push(bs1[0]);
+            if (Array.isArray(bs2) && bs2.length) p2BestSeries.push(bs2[0]);
+        }
+
+        if (m.duration) durations.push(m.duration);
+    });
+
+    const n = matches.length;
+    return {
+        n,
+        p1Wins, p2Wins,
+        p1Pts, p2Pts,
+        p1PPR: n ? p1AvgSum/n : 0,
+        p2PPR: n ? p2AvgSum/n : 0,
+        p1AvgScore: avg(p1Scores),
+        p2AvgScore: avg(p2Scores),
+        p1Scores, p2Scores,
+        p1Stddev: stddev(p1Scores),
+        p2Stddev: stddev(p2Scores),
+        p1BestSeries, p2BestSeries,
+        p1AvgBest: avg(p1BestSeries),
+        p2AvgBest: avg(p2BestSeries),
+        p1MaxBest: p1BestSeries.length ? Math.max(...p1BestSeries) : 0,
+        p2MaxBest: p2BestSeries.length ? Math.max(...p2BestSeries) : 0,
+        p1ZeroReprises, p2ZeroReprises, totalReprises,
+        durations,
+        avgDuration: avg(durations),
+    };
+}
+
+// ─── records ─────────────────────────────────────────────────────────────────
+
+function calcRecords(matches, p1, p2) {
+    let maxEcart = 0, maxEcartMatch = null;
+    let minEcart = Infinity, minEcartMatch = null;
+    let maxDur = 0, maxDurMatch = null;
+    let minDur = Infinity, minDurMatch = null;
+    let p1MaxScore = 0, p1MaxMatch = null;
+    let p2MaxScore = 0, p2MaxMatch = null;
+    let p1MaxPPR = 0, p1MaxPPRMatch = null;
+    let p2MaxPPR = 0, p2MaxPPRMatch = null;
+    let mostReprises = 0, mostReprisesMatch = null;
+    let fewestReprises = Infinity, fewestReprisesMatch = null;
+
+    matches.forEach(m => {
+        const ecart = Math.abs(m.s1 - m.s2);
+        if (ecart > maxEcart) { maxEcart = ecart; maxEcartMatch = m; }
+        if (ecart < minEcart) { minEcart = ecart; minEcartMatch = m; }
+
+        if (m.duration) {
+            if (m.duration > maxDur) { maxDur = m.duration; maxDurMatch = m; }
+            if (m.duration < minDur) { minDur = m.duration; minDurMatch = m; }
+        }
+
+        if (m.s1 > p1MaxScore) { p1MaxScore = m.s1; p1MaxMatch = m; }
+        if (m.s2 > p2MaxScore) { p2MaxScore = m.s2; p2MaxMatch = m; }
+
+        const rc = m.reprisesCount || (Array.isArray(m.reprises) ? m.reprises.length : 1);
+        const ppr1 = rc ? m.s1/rc : 0;
+        const ppr2 = rc ? m.s2/rc : 0;
+        if (ppr1 > p1MaxPPR) { p1MaxPPR = ppr1; p1MaxPPRMatch = m; }
+        if (ppr2 > p2MaxPPR) { p2MaxPPR = ppr2; p2MaxPPRMatch = m; }
+
+        const rc2 = m.reprisesCount || (Array.isArray(m.reprises) ? m.reprises.length : 0);
+        if (rc2 > mostReprises) { mostReprises = rc2; mostReprisesMatch = m; }
+        if (rc2 > 0 && rc2 < fewestReprises) { fewestReprises = rc2; fewestReprisesMatch = m; }
+    });
+
+    return {
+        maxEcart, maxEcartMatch,
+        minEcart, minEcartMatch,
+        maxDur, maxDurMatch,
+        minDur, minDurMatch,
+        p1MaxScore, p1MaxMatch,
+        p2MaxScore, p2MaxMatch,
+        p1MaxPPR, p1MaxPPRMatch,
+        p2MaxPPR, p2MaxPPRMatch,
+        mostReprises, mostReprisesMatch,
+        fewestReprises, fewestReprisesMatch,
+    };
+}
+
+// ─── séquences ───────────────────────────────────────────────────────────────
+
+function calcSequences(matches, p1, p2) {
+    // Le tableau est du plus récent au plus ancien — on parcourt à l'envers pour l'ordre chrono
+    const chron = [...matches].reverse();
+    let p1MaxStreak=0, p2MaxStreak=0;
+    let p1MaxStreakEnd=null, p2MaxStreakEnd=null;
+    let p1Cur=0, p2Cur=0;
+
+    chron.forEach(m => {
+        if (m.winner === p1) {
+            p1Cur++; p2Cur=0;
+            if (p1Cur > p1MaxStreak) { p1MaxStreak=p1Cur; p1MaxStreakEnd=m; }
+        } else if (m.winner === p2) {
+            p2Cur++; p1Cur=0;
+            if (p2Cur > p2MaxStreak) { p2MaxStreak=p2Cur; p2MaxStreakEnd=m; }
+        }
+    });
+
+    // Série en cours = depuis le début du tableau (plus récent)
+    const currentWinner = matches[0]?.winner;
+    let currentStreak = 0;
+    for (let i=0; i<matches.length; i++) {
+        if (matches[i].winner === currentWinner) currentStreak++;
+        else break;
+    }
+
+    return { p1MaxStreak, p1MaxStreakEnd, p2MaxStreak, p2MaxStreakEnd, currentWinner, currentStreak };
+}
+
+// ─── analyse horaire ─────────────────────────────────────────────────────────
+
+function calcTimeAnalysis(matches, p1, p2) {
+    const byHour = {}; // heure => {p1W, p2W, total}
+    const byDay  = {}; // jour semaine => {p1W, p2W, total}
+    const DAYS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+    matches.forEach(m => {
+        if (m.startTime) {
+            const h = parseInt(m.startTime.split(':')[0]);
+            if (!byHour[h]) byHour[h] = {p1W:0,p2W:0,total:0};
+            byHour[h].total++;
+            if (m.winner===p1) byHour[h].p1W++; else byHour[h].p2W++;
+        }
+        if (m.date) {
+            const d = parseDate(m.date).getDay();
+            const dn = DAYS[d];
+            if (!byDay[dn]) byDay[dn] = {p1W:0,p2W:0,total:0};
+            byDay[dn].total++;
+            if (m.winner===p1) byDay[dn].p1W++; else byDay[dn].p2W++;
+        }
+    });
+
+    return { byHour, byDay };
+}
+
+// ─── durée selon résultat ────────────────────────────────────────────────────
+
+function calcDurationByOutcome(matches, p1, p2) {
+    let p1WinDurs=[], p1LossDurs=[], p2WinDurs=[], p2LossDurs=[];
+    matches.forEach(m => {
+        if (!m.duration) return;
+        if (m.winner===p1) { p1WinDurs.push(m.duration); p2LossDurs.push(m.duration); }
+        else               { p2WinDurs.push(m.duration); p1LossDurs.push(m.duration); }
+    });
+    return { p1WinDurs, p1LossDurs, p2WinDurs, p2LossDurs };
+}
+
+// ─── top séries absolues ─────────────────────────────────────────────────────
+
+function calcTopSeries(matches, p1, p2) {
+    let p1All=[], p2All=[];
+    matches.forEach(m => {
+        if (!m.bestSeries) return;
+        const [bk1, bk2] = pKeys(m.bestSeries, p1, p2);
+        const bs1 = m.bestSeries[bk1];
+        const bs2 = m.bestSeries[bk2];
+        if (Array.isArray(bs1)) bs1.forEach(v => p1All.push({val:v, match:m}));
+        if (Array.isArray(bs2)) bs2.forEach(v => p2All.push({val:v, match:m}));
+    });
+    p1All.sort((a,b)=>b.val-a.val);
+    p2All.sort((a,b)=>b.val-a.val);
+    return { p1Top: p1All.slice(0,5), p2Top: p2All.slice(0,5) };
+}
+
+// ─── domination par type de billard (métriques absentes du reste du rapport) ──
+
+function calcDomination(ms, p1, p2) {
+    const n = ms.length;
+    if (!n) return null;
+    const w1 = ms.filter(m => m.winner === p1).length;
+    const w2 = n - w1;
+
+    // Marge en victoire et parties serrées, ramenées à un objectif de 100 pts
+    const margins1 = [], margins2 = [];
+    let close = 0, close1 = 0, close2 = 0;
+    ms.forEach(m => {
+        const gap = Math.abs(m.s1 - m.s2) / (m.objective || 100) * 100;
+        if (m.winner === p1) margins1.push(gap); else margins2.push(gap);
+        if (gap <= 10) {
+            close++;
+            if (m.winner === p1) close1++; else close2++;
+        }
+    });
+
+    const recent = ms.slice(0, 10); // ms est trié du plus récent au plus ancien
+    const rs = calcStats(recent, p1, p2);
+    const seq = calcSequences(ms, p1, p2);
+    const st = calcStats(ms, p1, p2);
+
+    return {
+        n, w1, w2,
+        rate1: w1/n*100, rate2: w2/n*100,
+        pValue: pValueEven(w1, n),
+        margin1: avg(margins1), margin2: avg(margins2),
+        close, close1, close2,
+        recentN: recent.length, recentW1: rs.p1Wins, recentW2: rs.p2Wins,
+        maxStreak1: seq.p1MaxStreak, maxStreak2: seq.p2MaxStreak,
+        maxBest1: st.p1MaxBest, maxBest2: st.p2MaxBest,
+    };
+}
+
+// ─── évolution par tranches ───────────────────────────────────────────────────
+
+function calcProgression(matches, p1, p2) {
+    const q = Math.ceil(matches.length/4);
+    // JSON trié du plus récent au plus ancien : anciennes = fin du tableau, récentes = début
+    const first = matches.slice(-q);
+    const last  = matches.slice(0, q);
+    const s1 = calcStats(first,p1,p2);
+    const s2 = calcStats(last, p1,p2);
+    return {
+        p1Start: s1.n ? s1.p1Wins/s1.n*100 : 0,
+        p1End:   s2.n ? s2.p1Wins/s2.n*100 : 0,
+        p2Start: s1.n ? s1.p2Wins/s1.n*100 : 0,
+        p2End:   s2.n ? s2.p2Wins/s2.n*100 : 0,
+        p1PPRStart: s1.p1PPR, p1PPREnd: s2.p1PPR,
+        p2PPRStart: s1.p2PPR, p2PPREnd: s2.p2PPR,
+    };
+}
+
+// ─── taux de reprise à zéro ───────────────────────────────────────────────────
+
+function zeroRate(zeros, total) {
+    return total > 0 ? (zeros/total*100).toFixed(1)+'%' : 'N/A';
+}
+
+// ─── formatage durée ─────────────────────────────────────────────────────────
+
+function fmtDur(min) {
+    if (!min && min !== 0) return '?';
+    return `${Math.floor(min)}min`;
+}
+
+function matchRef(m) {
+    if (!m) return '';
+    return `partie n°${m.num} (${m.date})`;
+}
+
+// ─── GÉNÉRATION DU RAPPORT ───────────────────────────────────────────────────
+
+function generateReport() {
+    const matches = data.matches;
+    const players = data.players;
+    const p1 = players.player1;
+    const p2 = players.player2;
+
+    const gs  = calcStats(matches, p1, p2);
+    const rec = calcRecords(matches, p1, p2);
+    const seq = calcSequences(matches, p1, p2);
+    const prg = calcProgression(matches, p1, p2);
+    const top = calcTopSeries(matches, p1, p2);
+    const dbo = calcDurationByOutcome(matches, p1, p2);
+
+    const petit = matches.filter(m=>m.billard==='Petit Billard');
+    const grand = matches.filter(m=>m.billard==='Grand Billard');
+    const petitS = calcStats(petit,p1,p2);
+    const grandS = calcStats(grand,p1,p2);
+
+    const trends5  = calcStats(matches.slice(0, 5),  p1, p2);
+    const trends10 = calcStats(matches.slice(0, 10), p1, p2);
+    const trends20 = calcStats(matches.slice(0, 20), p1, p2);
+
+    let r = '';
+
+    // ── En-tête ──────────────────────────────────────────────────────────────
+    r += SEP + '\n';
+    r += 'ÉVOLUTION DES PERFORMANCES AU BILLARD\n';
+    r += `${p1} vs ${p2}\n`;
+    const dates = matches.map(m=>parseDate(m.date)).filter(d=>!isNaN(d));
+    if (dates.length) {
+        const dMin = new Date(Math.min(...dates)), dMax = new Date(Math.max(...dates));
+        r += `${dMin.toLocaleDateString('fr-FR')} au ${dMax.toLocaleDateString('fr-FR')}\n`;
+    }
+    r += SEP + '\n\n';
+
+    // ── Résumé global ────────────────────────────────────────────────────────
+    r += `RÉSUMÉ GLOBAL — ${matches.length} PARTIES\n`;
+    r += SEP + '\n\n';
+
+    const colW = 42;
+    r += `${pad('',colW)}${pad(p1,20)}${pad(p2,20)}\n`;
+    r += SEP2 + '\n';
+    r += `${pad('Victoires',colW)}${pad(gs.p1Wins+'/'+gs.n+' ('+fmt(gs.p1Wins/gs.n*100)+'%)',20)}${pad(gs.p2Wins+'/'+gs.n+' ('+fmt(gs.p2Wins/gs.n*100)+'%)',20)}\n`;
+    r += `${pad('Score moyen par partie',colW)}${pad(fmt(gs.p1AvgScore),20)}${pad(fmt(gs.p2AvgScore),20)}\n`;
+    r += `${pad('Points par reprise (moy. des moy.)',colW)}${pad(fmt(gs.p1PPR,2),20)}${pad(fmt(gs.p2PPR,2),20)}\n`;
+    r += `${pad('Écart-type des scores',colW)}${pad(fmt(gs.p1Stddev,2),20)}${pad(fmt(gs.p2Stddev,2),20)}\n`;
+    r += `${pad('Reprises à 0 / total reprises',colW)}${pad(gs.p1ZeroReprises+'/'+gs.totalReprises+' ('+zeroRate(gs.p1ZeroReprises,gs.totalReprises)+')',20)}${pad(gs.p2ZeroReprises+'/'+gs.totalReprises+' ('+zeroRate(gs.p2ZeroReprises,gs.totalReprises)+')',20)}\n`;
+    r += `${pad('Durée moyenne des parties',colW)}${pad(fmtDur(gs.avgDuration),20)}\n`;
+    r += '\n';
+
+    // ── Petit vs Grand ────────────────────────────────────────────────────────
+    r += 'COMPARAISON PETIT vs GRAND BILLARD\n';
+    r += SEP + '\n\n';
+
+    function verdictLine(d) {
+        const leader = d.w1 === d.w2 ? null : (d.w1 > d.w2 ? p1 : p2);
+        const leaderRate = Math.max(d.rate1, d.rate2);
+        let v;
+        if (!leader) v = 'ÉQUILIBRE PARFAIT';
+        else if (leaderRate >= 65) v = `${leader} DOMINE NETTEMENT (${fmt(leaderRate)}% de victoires)`;
+        else if (leaderRate >= 55) v = `${leader} A L'AVANTAGE (${fmt(leaderRate)}% de victoires)`;
+        else v = `ÉQUILIBRÉ (${fmt(leaderRate)}% de victoires pour ${leader})`;
+        const fiab = d.pValue < 0.05
+            ? `écart statistiquement significatif (p=${fmt(d.pValue*100,0)}%)`
+            : `écart non concluant, peut relever du hasard (p=${fmt(d.pValue*100,0)}%)`;
+        return `  Verdict: ${v} — ${fiab}\n`;
+    }
+
+    function sectionBillard(label, ms, s) {
+        if (!ms.length) return '';
+        const d = calcDomination(ms, p1, p2);
+        let t = `${label} — ${ms.length} parties (${fmt(ms.length/matches.length*100)}% du total)\n`;
+        t += SEP2 + '\n';
+        t += verdictLine(d) + '\n';
+        t += `${pad('',colW)}${pad(p1,20)}${pad(p2,20)}\n`;
+        t += `${pad('Victoires',colW)}${pad(s.p1Wins+'/'+s.n+' ('+fmt(s.p1Wins/s.n*100)+'%)',20)}${pad(s.p2Wins+'/'+s.n+' ('+fmt(s.p2Wins/s.n*100)+'%)',20)}\n`;
+        t += `${pad('Score moyen',colW)}${pad(fmt(s.p1AvgScore),20)}${pad(fmt(s.p2AvgScore),20)}\n`;
+        t += `${pad('Pts / reprise',colW)}${pad(fmt(s.p1PPR,2),20)}${pad(fmt(s.p2PPR,2),20)}\n`;
+        t += `${pad('Écart-type scores',colW)}${pad(fmt(s.p1Stddev,2),20)}${pad(fmt(s.p2Stddev,2),20)}\n`;
+        const zr = s.totalReprises;
+        t += `${pad('Reprises à 0',colW)}${pad(s.p1ZeroReprises+' ('+zeroRate(s.p1ZeroReprises,zr)+')',20)}${pad(s.p2ZeroReprises+' ('+zeroRate(s.p2ZeroReprises,zr)+')',20)}\n`;
+        t += `${pad('Marge moy. en victoire (base 100)',colW)}${pad(d.w1 ? fmt(d.margin1)+' pts' : '-',20)}${pad(d.w2 ? fmt(d.margin2)+' pts' : '-',20)}\n`;
+        t += `${pad('Parties serrées (≤10 pts) gagnées',colW)}${pad(d.close1+'/'+d.close,20)}${pad(d.close2+'/'+d.close,20)}\n`;
+        t += `${pad('Forme ('+d.recentN+' dernières sur ce billard)',colW)}${pad(d.recentW1+'/'+d.recentN,20)}${pad(d.recentW2+'/'+d.recentN,20)}\n`;
+        t += `${pad('Plus longue série (parties de ce billard)',colW)}${pad(d.maxStreak1,20)}${pad(d.maxStreak2,20)}\n`;
+        t += `${pad('Meilleure série',colW)}${pad(d.maxBest1||'-',20)}${pad(d.maxBest2||'-',20)}\n`;
+        t += `${pad('Durée moyenne',colW)}${fmtDur(s.avgDuration)}\n`;
+        t += '\n';
+        return t;
+    }
+    r += sectionBillard('PETIT BILLARD', petit, petitS);
+    r += sectionBillard('GRAND BILLARD', grand, grandS);
+
+    if (petit.length && grand.length) {
+        const pr1 = petitS.p1Wins/petitS.n*100, gr1 = grandS.p1Wins/grandS.n*100;
+        const diff1 = gr1 - pr1; // >0 : p1 relativement meilleur au GB
+        r += 'SPÉCIALITÉ — taux de victoire selon le billard\n';
+        r += SEP2 + '\n';
+        r += `${pad('',colW)}${pad('Petit Billard',20)}${pad('Grand Billard',20)}${pad('Écart GB-PB',14)}\n`;
+        r += `${pad(p1,colW)}${pad(fmt(pr1)+'%',20)}${pad(fmt(gr1)+'%',20)}${pad((diff1>0?'+':'')+fmt(diff1)+' pts',14)}\n`;
+        r += `${pad(p2,colW)}${pad(fmt(100-pr1)+'%',20)}${pad(fmt(100-gr1)+'%',20)}${pad((-diff1>0?'+':'')+fmt(-diff1)+' pts',14)}\n\n`;
+        if (Math.abs(diff1) < 3) {
+            r += '  → Rapport de force similaire sur les deux billards.\n\n';
+        } else {
+            const better = diff1 > 0 ? p1 : p2;
+            const other = diff1 > 0 ? p2 : p1;
+            const table = diff1 > 0 ? 'Grand Billard' : 'Petit Billard';
+            r += `  → ${better} est relativement plus à l'aise au ${table} ; ${other} domine davantage sur l'autre billard (${fmt(Math.abs(diff1))} pts d'écart${Math.abs(diff1) < 10 ? ', écart modeste à prendre avec prudence vu le nombre de parties' : ''}).\n\n`;
+        }
+    }
+
+    // ── Records & extrêmes ────────────────────────────────────────────────────
+    r += 'RECORDS & EXTRÊMES\n';
+    r += SEP + '\n\n';
+
+    function billardType(m) { return m ? (m.billard === 'Grand Billard' ? 'GB' : 'PB') : ''; }
+
+    if (rec.maxEcartMatch) {
+        r += `Plus grand écart de score:       ${rec.maxEcart} points — ${matchRef(rec.maxEcartMatch)} [${billardType(rec.maxEcartMatch)}] (${rec.maxEcartMatch.s1}-${rec.maxEcartMatch.s2}, gagnant: ${rec.maxEcartMatch.winner})\n`;
+    }
+    if (rec.minEcartMatch) {
+        r += `Victoire la plus serrée:         ${rec.minEcart} points — ${matchRef(rec.minEcartMatch)} [${billardType(rec.minEcartMatch)}] (${rec.minEcartMatch.s1}-${rec.minEcartMatch.s2}, gagnant: ${rec.minEcartMatch.winner})\n`;
+    }
+    r += '\n';
+    if (rec.p1MaxMatch) {
+        r += `Meilleur score ${pad(p1,12)}:  ${rec.p1MaxScore} pts — ${matchRef(rec.p1MaxMatch)} [${billardType(rec.p1MaxMatch)}]\n`;
+    }
+    if (rec.p2MaxMatch) {
+        r += `Meilleur score ${pad(p2,12)}:  ${rec.p2MaxScore} pts — ${matchRef(rec.p2MaxMatch)} [${billardType(rec.p2MaxMatch)}]\n`;
+    }
+    r += '\n';
+    if (rec.p1MaxPPRMatch) {
+        r += `Meilleure moy. reprise ${pad(p1,12)}:  ${fmt(rec.p1MaxPPR,2)} pts/rep — ${matchRef(rec.p1MaxPPRMatch)} [${billardType(rec.p1MaxPPRMatch)}]\n`;
+    }
+    if (rec.p2MaxPPRMatch) {
+        r += `Meilleure moy. reprise ${pad(p2,12)}:  ${fmt(rec.p2MaxPPR,2)} pts/rep — ${matchRef(rec.p2MaxPPRMatch)} [${billardType(rec.p2MaxPPRMatch)}]\n`;
+    }
+    r += '\n';
+    if (rec.maxDurMatch) {
+        r += `Partie la plus longue:           ${fmtDur(rec.maxDur)} — ${matchRef(rec.maxDurMatch)} [${billardType(rec.maxDurMatch)}]\n`;
+    }
+    if (rec.minDurMatch) {
+        r += `Partie la plus courte:           ${fmtDur(rec.minDur)} — ${matchRef(rec.minDurMatch)} [${billardType(rec.minDurMatch)}]\n`;
+    }
+    r += '\n';
+    if (rec.mostReprisesMatch) {
+        r += `Plus grand nombre de reprises:   ${rec.mostReprises} — ${matchRef(rec.mostReprisesMatch)} [${billardType(rec.mostReprisesMatch)}]\n`;
+    }
+    if (rec.fewestReprisesMatch && rec.fewestReprises < Infinity) {
+        r += `Moins de reprises:               ${rec.fewestReprises} — ${matchRef(rec.fewestReprisesMatch)} [${billardType(rec.fewestReprisesMatch)}]\n`;
+    }
+    r += '\n';
+
+    // ── Top séries absolues ──────────────────────────────────────────────────
+    r += 'TOP 5 MEILLEURES SÉRIES (toutes parties)\n';
+    r += SEP + '\n\n';
+    r += `${pad(p1,60)}${p2}\n`;
+    r += SEP2 + '\n';
+    const maxRows = Math.max(top.p1Top.length, top.p2Top.length);
+    for (let i=0; i<maxRows; i++) {
+        const e1 = top.p1Top[i];
+        const e2 = top.p2Top[i];
+        const s1 = e1 ? `${i+1}. ${e1.val} pts — ${matchRef(e1.match)}` : '';
+        const s2 = e2 ? `${i+1}. ${e2.val} pts — ${matchRef(e2.match)}` : '';
+        r += `${pad(s1,60)}${s2}\n`;
+    }
+    r += '\n';
+
+    // ── Régularité & constance ───────────────────────────────────────────────
+    r += 'RÉGULARITÉ & CONSTANCE\n';
+    r += SEP + '\n\n';
+    r += `  L'écart-type mesure la variabilité des scores: plus il est faible, plus le joueur est régulier.\n\n`;
+    r += `${pad('',colW)}${pad(p1,20)}${pad(p2,20)}\n`;
+    r += SEP2 + '\n';
+    r += `${pad('Écart-type scores (toutes parties)',colW)}${pad(fmt(gs.p1Stddev,2),20)}${pad(fmt(gs.p2Stddev,2),20)}\n`;
+    if (petit.length && grand.length) {
+        r += `${pad('Écart-type — Petit Billard',colW)}${pad(fmt(petitS.p1Stddev,2),20)}${pad(fmt(petitS.p2Stddev,2),20)}\n`;
+        r += `${pad('Écart-type — Grand Billard',colW)}${pad(fmt(grandS.p1Stddev,2),20)}${pad(fmt(grandS.p2Stddev,2),20)}\n`;
+    }
+    r += `${pad('Moy. meilleure série / partie',colW)}${pad(fmt(gs.p1AvgBest,2),20)}${pad(fmt(gs.p2AvgBest,2),20)}\n`;
+    r += `${pad('% reprises à 0 (blanches)',colW)}${pad(zeroRate(gs.p1ZeroReprises,gs.totalReprises),20)}${pad(zeroRate(gs.p2ZeroReprises,gs.totalReprises),20)}\n`;
+    r += '\n';
+
+    // ── Durée & rythme ────────────────────────────────────────────────────────
+    if (gs.durations.length > 0) {
+        r += 'DURÉE & RYTHME DE JEU\n';
+        r += SEP + '\n\n';
+        r += `${pad('',colW)}${pad(p1,20)}${pad(p2,20)}\n`;
+        r += SEP2 + '\n';
+        r += `${pad('Durée moy. quand victoire',colW)}${pad(fmtDur(avg(dbo.p1WinDurs)),20)}${pad(fmtDur(avg(dbo.p2WinDurs)),20)}\n`;
+        r += `${pad('Durée moy. quand défaite',colW)}${pad(fmtDur(avg(dbo.p1LossDurs)),20)}${pad(fmtDur(avg(dbo.p2LossDurs)),20)}\n`;
+        r += `${pad('Durée globale (toutes parties)',colW)}${fmtDur(gs.avgDuration)}\n`;
+        r += '\n';
+    }
+
+    // ── Séquences & séries de victoires ──────────────────────────────────────
+    r += 'SÉQUENCES & SÉRIES DE VICTOIRES\n';
+    r += SEP + '\n\n';
+    r += `${p1}: plus longue série de victoires consécutives: ${seq.p1MaxStreak}`;
+    if (seq.p1MaxStreakEnd) r += ` (terminée à la ${matchRef(seq.p1MaxStreakEnd)})`;
+    r += '\n';
+    r += `${p2}: plus longue série de victoires consécutives: ${seq.p2MaxStreak}`;
+    if (seq.p2MaxStreakEnd) r += ` (terminée à la ${matchRef(seq.p2MaxStreakEnd)})`;
+    r += '\n\n';
+    r += `Série en cours: ${seq.currentStreak} victoire(s) consécutive(s) pour ${seq.currentWinner}\n\n`;
+
+    // ── Tendances récentes ────────────────────────────────────────────────────
+    r += 'ÉVOLUTION RÉCENTE\n';
+    r += SEP + '\n\n';
+    r += `${pad('',colW)}${pad(p1,26)}${pad(p2,26)}\n`;
+    r += SEP2 + '\n';
+
+    function trendRow(label, s) {
+        const n = s.n;
+        if (!n) return '';
+        return `${pad(label,colW)}` +
+               `${pad(s.p1Wins+'/'+n+' | '+fmt(s.p1PPR,2)+' pts/rep',26)}` +
+               `${pad(s.p2Wins+'/'+n+' | '+fmt(s.p2PPR,2)+' pts/rep',26)}\n`;
+    }
+    if (matches.length >= 5)  r += trendRow('5 dernières parties', trends5);
+    if (matches.length >= 10) r += trendRow('10 dernières parties', trends10);
+    if (matches.length >= 20) r += trendRow('20 dernières parties', trends20);
+    r += trendRow('Toutes parties (référence)', gs);
+    r += '\n';
+
+    // ── Progression ──────────────────────────────────────────────────────────
+    r += 'ANALYSE DE PROGRESSION (premier quart vs dernier quart)\n';
+    r += SEP + '\n\n';
+    const q = Math.ceil(matches.length/4);
+    r += `  Basé sur les ${q} premières et les ${q} dernières parties.\n\n`;
+
+    function evol(before, after) {
+        const diff = after - before;
+        const arrow = diff > 0.5 ? '📈 HAUSSE' : diff < -0.5 ? '📉 BAISSE' : '➡️  STABLE';
+        return `${fmt(before)}% → ${fmt(after)}%  (${diff>0?'+':''}${fmt(diff)}%)  ${arrow}`;
+    }
+
+    r += `${p1}:\n`;
+    r += `  Taux de victoire:   ${evol(prg.p1Start, prg.p1End)}\n`;
+    r += `  Pts / reprise:      ${fmt(prg.p1PPRStart,2)} → ${fmt(prg.p1PPREnd,2)}  (${prg.p1PPREnd>prg.p1PPRStart?'📈':'📉'})\n\n`;
+
+    r += `${p2}:\n`;
+    r += `  Taux de victoire:   ${evol(prg.p2Start, prg.p2End)}\n`;
+    r += `  Pts / reprise:      ${fmt(prg.p2PPRStart,2)} → ${fmt(prg.p2PPREnd,2)}  (${prg.p2PPREnd>prg.p2PPRStart?'📈':'📉'})\n\n`;
+
+    r += SEP + '\n';
+
+    currentReport = r;
+    displayReport(r);
+}
+
+function displayReport(report) {
+    document.getElementById('content').innerHTML = `<div class="report">${escapeHtml(report)}</div>`;
+}
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+function showError(msg) {
+    document.getElementById('content').innerHTML = `<div class="error">⚠️ ${msg}</div>`;
+}
+function reportFileName() {
+    const d = new Date();
+    const pad2 = n => String(n).padStart(2, '0');
+    return 'analyse_billard_' + pad2(d.getDate()) + '-' + pad2(d.getMonth()+1) + '-' + d.getFullYear() + '.txt';
+}
+
+async function saveReport() {
+    if (!currentReport) { setStatus('Générez d\u2019abord une analyse (données du tracker ou import JSON).', true); return; }
+    const name = reportFileName();
+    try {
+        // Tablette : feuille de partage → « Enregistrer dans Fichiers »
+        if (navigator.maxTouchPoints > 1 && !window.showSaveFilePicker && navigator.canShare) {
+            const f = new File([currentReport], name, { type: 'text/plain' });
+            if (navigator.canShare({ files: [f] })) {
+                await navigator.share({ files: [f], title: name });
+                setStatus('Rapport envoyé : ' + name);
+                return;
+            }
+        }
+        // Chrome / Edge : choix de l\u2019emplacement
+        if (window.showSaveFilePicker) {
+            const h = await window.showSaveFilePicker({ suggestedName: name, types: [{ description: 'Texte', accept: { 'text/plain': ['.txt'] } }] });
+            const w = await h.createWritable();
+            await w.write(currentReport);
+            await w.close();
+            setStatus('Rapport enregistré : ' + name);
+            return;
+        }
+    } catch (e) {
+        if (e && e.name === 'AbortError') return;
+        console.warn('Enregistrement direct indisponible, repli :', e);
+    }
+    // Repli : téléchargement classique
+    const blob = new Blob([currentReport], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus('Rapport téléchargé : ' + name);
+}
+
+async function copyReport() {
+    if (!currentReport) { setStatus('Générez d\u2019abord une analyse.', true); return; }
+    try {
+        await navigator.clipboard.writeText(currentReport);
+    } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = currentReport;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e2) {}
+        ta.remove();
+    }
+    setStatus('Rapport copié dans le presse-papiers.');
+}
+
+// Au chargement : afficher directement les données du tracker si elles existent
+loadFromTracker(true);
+</script>
+</body>
+</html>
