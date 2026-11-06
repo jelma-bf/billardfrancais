@@ -3457,9 +3457,11 @@
                 }
             });
             
-            // Trier en ordre décroissant et garder les top 10
+            // Garder les 10 meilleures séries, puis les classer par date croissante
             allSeries.sort((a, b) => b.points - a.points);
-            const topSeries = allSeries.slice(0, 10);
+            const toTime = s => { const p = String(s || '').split('/'); return p.length === 3 ? new Date(+p[2], +p[1] - 1, +p[0]).getTime() : 0; };
+            const topSeries = allSeries.slice(0, 10)
+                .sort((a, b) => (toTime(a.date) - toTime(b.date)) || (a.matchNum - b.matchNum) || (b.points - a.points));
             
             // Afficher les top 10
             const container = document.getElementById('topSeriesContainer');
