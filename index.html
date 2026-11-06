@@ -4449,6 +4449,14 @@
         });
     </script>
 <script>
+// Retour depuis la page Analyse : ouvrir directement l'onglet Statistiques (index.html#stats)
+document.addEventListener('DOMContentLoaded', function () {
+    if (location.hash === '#stats' && localStorage.getItem('billard_players')) {
+        try { closeAndAccessStats(); } catch (e) { console.warn(e); }
+    }
+});
+</script>
+<script>
 // confirm()/alert() sont bloqués dans une page publiée : dialogue intégré à la place
 (function () {
     function show(msg, withCancel) {
