@@ -25,14 +25,17 @@
             border-bottom: 2px solid #444;
         }
         h1 { font-size: 1.8em; color: #4a9eff; }
-        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        .controls { display: flex; gap: 8px; flex-wrap: nowrap; }
+        .controls button { flex: 1 1 0; min-width: 130px; padding: 12px 10px; white-space: nowrap; text-align: center; font-size: 0.95em; }
         a.navlink { color: #4a9eff; text-decoration: none; font-weight: 600; padding: 10px 6px; }
         a.navlink:hover { text-decoration: underline; }
         #status { min-height: 1.4em; margin: -14px 0 14px 0; font-size: 0.9em; color: #8bc48b; }
         #status.err { color: #ff8888; }
         @media (max-width: 900px) {
             body { padding: 12px; }
-            header { flex-direction: column; align-items: flex-start; gap: 14px; }
+            header { flex-wrap: wrap; gap: 12px; }
+            .controls { width: 100%; }
+            .controls button { min-width: 0; padding: 12px 6px; font-size: 0.9em; }
             h1 { font-size: 1.4em; }
             .report { font-size: 11px; padding: 14px; }
         }
@@ -74,17 +77,15 @@
 <body>
 <div class="container">
     <header>
-        <h1>🎱 Analyseur Texte - Billard</h1>
+        <h1>🎱 Analyseur parties</h1>
         <div class="controls">
-            <button type="button" onclick="location.href='index.html#stats'">← Retour aux stats</button>
-            <button type="button" onclick="loadFromTracker(false)">🎱 Données du tracker</button>
-            <button type="button" onclick="document.getElementById('jsonFile').click()">📂 Importer JSON</button>
+            <button type="button" onclick="location.href='index.html#stats'">← Stats</button>
+            <button type="button" onclick="document.getElementById('jsonFile').click()">📂 Import JSON</button>
             <button type="button" onclick="saveReport()">💾 Enregistrer .txt</button>
             <button type="button" onclick="copyReport()">📋 Copier</button>
         </div>
     </header>
     <div id="status" role="status"></div>
-    <button type="button" id="backFab" onclick="location.href='index.html#stats'" aria-label="Retour aux statistiques" style="position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom, 0px));z-index:50;padding:12px 18px;border-radius:24px;box-shadow:0 2px 10px rgba(0,0,0,0.4);">← Stats</button>
     <input type="file" id="jsonFile" accept=".json,application/json,text/plain" onchange="loadJSON(event)">
     <div id="content">
         <div class="no-data">
