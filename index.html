@@ -33,10 +33,10 @@
 
         :root {
             --primary: #4a5a6a;
-            --laurent-blue: #6b8ec9;
-            --jean-gold: #d4a574;
-            --laurent-light: #e8f0f8;
-            --jean-light: #f8f3e8;
+            --player1-blue: #6b8ec9;
+            --player2-gold: #d4a574;
+            --player1-light: #e8f0f8;
+            --player2-light: #f8f3e8;
             --light: #f0f5f2;
             --border: #d4d9d6;
             --success: #8bc88b;
@@ -753,10 +753,46 @@
             color: var(--primary);
         }
     </style>
+    <style id="embellish">
+        /* Habillage visuel uniquement : aucune règle ne touche au fonctionnement ni à la mise en page en paysage */
+        body {
+            background: linear-gradient(160deg, #eef3f6 0%, #f7f4ee 100%);
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3 { letter-spacing: 0.2px; }
+        .card {
+            box-shadow: 0 6px 24px rgba(40, 60, 80, 0.08);
+            border-color: #e3e8e5;
+        }
+        .card:hover { box-shadow: 0 10px 30px rgba(40, 60, 80, 0.12); }
+        .tab-btn {
+            border-radius: 10px 10px 0 0;
+        }
+        .tab-btn:hover { color: var(--primary); background: rgba(74, 90, 106, 0.05); }
+        .tab-btn.active { background: rgba(74, 90, 106, 0.06); }
+        button {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease;
+        }
+        button:hover { filter: brightness(1.04); }
+        button:active { transform: translateY(1px) scale(0.99); }
+        .keyboard-btn {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+        }
+        .modal-content {
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .modal { backdrop-filter: blur(2px); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: #c9d3cf; border-radius: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::selection { background: #cfe0ea; }
+    </style>
 </head>
 <body>
         <!-- Setup Screen - Configuration initiale des joueurs -->
-        <div id="setupScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--laurent-blue) 0%, var(--jean-gold) 100%); display: flex; align-items: center; justify-content: center; z-index: 3000;">
+        <div id="setupScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%); display: flex; align-items: center; justify-content: center; z-index: 3000;">
             <div style="background: white; padding: 80px 60px; border-radius: 25px; text-align: center; max-width: 550px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3); animation: slideUp 0.5s ease;">
                 <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5em; color: var(--primary); margin-bottom: 10px;">🎱 Billard</h1>
                 <p style="color: #666; margin-bottom: 40px; font-size: 1.1em; font-weight: 500;">Configurer les joueurs</p>
@@ -772,7 +808,7 @@
                         <input type="text" id="setupPlayer2" placeholder="Entrez le nom du joueur 2" style="width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 1em;" />
                     </div>
 
-                    <button onclick="savePlayersSetup()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, var(--laurent-blue) 0%, var(--jean-gold) 100%); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                    <button onclick="savePlayersSetup()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
                         ✓ Commencer
                     </button>
                 </div>
@@ -785,7 +821,7 @@
                 </div>
 
                 <!-- Bouton import JSON -->
-                <button onclick="document.getElementById('setupImportInput').click()" style="width: 100%; margin-top: 16px; padding: 13px; background: white; border: 2px dashed #bbb; border-radius: 8px; color: #666; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--laurent-blue)'; this.style.color='var(--laurent-blue)'; this.style.background='#f0f4fc';" onmouseout="this.style.borderColor='#bbb'; this.style.color='#666'; this.style.background='white';">
+                <button onclick="document.getElementById('setupImportInput').click()" style="width: 100%; margin-top: 16px; padding: 13px; background: white; border: 2px dashed #bbb; border-radius: 8px; color: #666; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--player1-blue)'; this.style.color='var(--player1-blue)'; this.style.background='#f0f4fc';" onmouseout="this.style.borderColor='#bbb'; this.style.color='#666'; this.style.background='white';">
                     <span aria-hidden="true">📥</span> Importer un fichier JSON existant
                 </button>
                 <input type="file" id="setupImportInput" accept=".json" style="display: none;" onchange="importFromSetup(event)" />
@@ -794,7 +830,7 @@
         </div>
 
         <!-- Splash Screen d'initialisation -->
-        <div id="splashScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--laurent-blue) 0%, var(--jean-gold) 100%); display: flex; align-items: center; justify-content: center; z-index: 2000;">
+        <div id="splashScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%); display: flex; align-items: center; justify-content: center; z-index: 2000;">
             <div style="background: white; padding: 40px 60px; border-radius: 25px; text-align: center; width: 90%; max-width: 900px; box-sizing: border-box; max-height: 94vh; overflow-y: auto; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3); animation: slideUp 0.5s ease;">
                 <div style="font-size: 3em; margin-bottom: 15px;">🎱 ⚡ 🎯</div>
                 <h1 style="font-family: 'Playfair Display', serif; font-size: 3em; color: var(--primary); margin-bottom: 15px;">Billard</h1>
@@ -824,8 +860,8 @@
                         <label style="display: block; font-size: 1em; font-weight: 600; margin-bottom: 10px; color: var(--primary);">Qui commence ?</label>
                         <select id="splashFirstPlayer" style="width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 1em; cursor: pointer;">
                             <option value="">-- Sélectionner --</option>
-                            <option value="LAURENT">● Laurent (Bleu)</option>
-                            <option value="JEAN LUC">● Jean Luc (Doré)</option>
+                            <option value="J1">● Joueur 1 (Bleu)</option>
+                            <option value="J2">● Joueur 2 (Doré)</option>
                         </select>
                     </div>
 
@@ -833,7 +869,7 @@
                         <button class="btn-secondary" style="width: 100%; padding: 15px; font-size: 1.1em; font-weight: 600;" onclick="closeAndAccessStats()">
                             <span aria-hidden="true">←</span> Annuler
                         </button>
-                        <button class="btn-primary" style="width: 100%; padding: 15px; font-size: 1.1em; font-weight: 600; background: linear-gradient(135deg, var(--laurent-blue) 0%, #5a7db8 100%); box-shadow: 0 4px 15px rgba(107, 142, 201, 0.4);" onclick="startMatch()">
+                        <button class="btn-primary" style="width: 100%; padding: 15px; font-size: 1.1em; font-weight: 600; background: linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%); box-shadow: 0 4px 15px rgba(107, 142, 201, 0.4);" onclick="startMatch()">
                             <span aria-hidden="true">▶</span> Commencer
                         </button>
                     </div>
@@ -884,13 +920,13 @@
                 </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                    <div style="background: linear-gradient(135deg, var(--laurent-blue) 0%, #5a7db8 100%); padding: 40px; border-radius: 16px; text-align: center; border: 4px solid transparent; transition: all 0.3s ease; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; box-shadow: 0 6px 20px rgba(107, 142, 201, 0.25);" id="player1Card" onclick="validateFromCard(1)">
-                        <div class="label" style="font-size: 1.5em; font-weight: 700; margin-bottom: 20px; color: white;" id="player1Name">Laurent</div>
+                    <div style="background: linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%); padding: 40px; border-radius: 16px; text-align: center; border: 4px solid transparent; transition: all 0.3s ease; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; box-shadow: 0 6px 20px rgba(107, 142, 201, 0.25);" id="player1Card" onclick="validateFromCard(1)">
+                        <div class="label" style="font-size: 1.5em; font-weight: 700; margin-bottom: 20px; color: white;" id="player1Name">Joueur 1</div>
                         <div class="value" id="score1" style="font-size: 6.5em; font-weight: 700; color: white;">0</div>
                         <div style="font-size: 1.7em; color: rgba(255, 255, 255, 0.9); margin-top: 15px; font-weight: 600;" id="avg1">Moy: 0.00</div>
                     </div>
-                    <div style="background: linear-gradient(135deg, var(--jean-gold) 0%, #c9985f 100%); padding: 40px; border-radius: 16px; text-align: center; border: 4px solid transparent; transition: all 0.3s ease; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; box-shadow: 0 6px 20px rgba(212, 165, 116, 0.25);" id="player2Card" onclick="validateFromCard(2)">
-                        <div class="label" style="font-size: 1.5em; font-weight: 700; margin-bottom: 20px; color: white;" id="player2Name">Jean Luc</div>
+                    <div style="background: linear-gradient(135deg, var(--player2-gold) 0%, #c9985f 100%); padding: 40px; border-radius: 16px; text-align: center; border: 4px solid transparent; transition: all 0.3s ease; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; box-shadow: 0 6px 20px rgba(212, 165, 116, 0.25);" id="player2Card" onclick="validateFromCard(2)">
+                        <div class="label" style="font-size: 1.5em; font-weight: 700; margin-bottom: 20px; color: white;" id="player2Name">Joueur 2</div>
                         <div class="value" id="score2" style="font-size: 6.5em; font-weight: 700; color: white;">0</div>
                         <div style="font-size: 1.7em; color: rgba(255, 255, 255, 0.9); margin-top: 15px; font-weight: 600;" id="avg2">Moy: 0.00</div>
                     </div>
@@ -925,13 +961,13 @@
 
                 <div style="display: none;">
                     <div id="buttonSlot1">
-                        <button id="btnPlayer1" class="btn-primary" class="btn-player1" onclick="validatePointsLaurent()" disabled style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--laurent-blue) 0%, #5a7db8 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(107, 142, 201, 0.3); transition: all 0.3s ease;">
-                            <span aria-hidden="true">✓</span> <span id="btn1Label">Laurent</span>
+                        <button id="btnPlayer1" class="btn-primary" class="btn-player1" onclick="validatePointsPlayerOne()" disabled style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(107, 142, 201, 0.3); transition: all 0.3s ease;">
+                            <span aria-hidden="true">✓</span> <span id="btn1Label">Joueur 1</span>
                         </button>
                     </div>
                     <div id="buttonSlot2">
-                        <button id="btnPlayer2" class="btn-primary" class="btn-player2" onclick="validatePointsJean()" disabled style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--jean-gold) 0%, #c9985f 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3); transition: all 0.3s ease;">
-                            <span aria-hidden="true">✓</span> <span id="btn2Label">Jean Luc</span>
+                        <button id="btnPlayer2" class="btn-primary" class="btn-player2" onclick="validatePointsPlayerTwo()" disabled style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--player2-gold) 0%, #c9985f 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3); transition: all 0.3s ease;">
+                            <span aria-hidden="true">✓</span> <span id="btn2Label">Joueur 2</span>
                         </button>
                     </div>
                 </div>
@@ -951,43 +987,39 @@
                     <button onclick="exportToFolder()" style="padding: 12px 20px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; border: none; border-radius: 8px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
                         <span aria-hidden="true">📂</span> Exporter les données
                     </button>
-                    <button onclick="document.getElementById('uploadInput').click()" style="padding: 12px 20px; background: linear-gradient(135deg, var(--jean-gold) 0%, #c9985f 100%); color: white; border: none; border-radius: 8px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                    <button onclick="document.getElementById('uploadInput').click()" style="padding: 12px 20px; background: linear-gradient(135deg, var(--player2-gold) 0%, #c9985f 100%); color: white; border: none; border-radius: 8px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
                         <span aria-hidden="true">⬆️</span> Importer les données
                     </button>
                     <input type="file" id="uploadInput" accept=".json" style="display: none;" onchange="uploadData(event)" />
-                    <button id="btnLinkJson" onclick="linkJsonFile()" style="padding: 12px 20px; background: white; color: var(--primary); border: 2px solid var(--border); border-radius: 8px; font-size: 0.9em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; grid-column: span 2;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';" title="Lier un fichier JSON pour l'auto-sauvegarde">
-                        🔗 Lier un fichier JSON (auto-sauvegarde)
-                    </button>
                 </div>
                 <div style="font-size: 0.85em; color: #666; margin-top: 12px; line-height: 1.5;">
-                    <p style="margin: 0;"><strong>Exporter :</strong> Choisissez un dossier pour sauvegarder vos données</p>
+                    <p style="margin: 0;"><strong>Exporter :</strong> Enregistre une copie de vos données dans un fichier JSON</p>
                     <p style="margin: 5px 0 0 0;"><strong>Importer :</strong> Restaure les données depuis un fichier JSON</p>
-                    <p style="margin: 5px 0 0 0;"><strong>🔗 Lier un JSON :</strong> Sélectionnez votre fichier JSON existant — il sera mis à jour automatiquement à chaque partie enregistrée</p>
                 </div>
             </div>
             
-            <div style="background: linear-gradient(135deg, var(--laurent-blue) 0%, var(--jean-gold) 100%); padding: 40px; border-radius: 15px; margin-bottom: 30px; border: none; text-align: center; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%); padding: 40px; border-radius: 15px; margin-bottom: 30px; border: none; text-align: center; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);">
                 <div style="font-size: 4.5em; font-weight: 700; color: white; margin-bottom: 15px;" id="totalMatches">91</div>
                 <div style="font-size: 1.2em; color: rgba(255, 255, 255, 0.95); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">
                     <span aria-hidden="true">🎮</span> Parties jouées
                 </div>
             </div>
 
-            <div style="background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-                <h3 style="margin-bottom: 15px; color: var(--primary); margin-top: 0; font-size: 1em;"><span aria-hidden="true">🏆</span> Victoires</h3>
+            <div style="background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 25px; cursor: pointer;" onclick="openWinsModal()" title="Voir le déroulement des victoires">
+                <h3 style="margin-bottom: 15px; color: var(--primary); margin-top: 0;"><span aria-hidden="true">🏆</span> Victoires</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid rgba(107, 142, 201, 0.3);">
-                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" data-player="player1">Laurent</div>
+                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" data-player="player1">Joueur 1</div>
                         <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px;">
-                            <div style="font-size: 2em; font-weight: 700; color: var(--laurent-blue);" id="laurentWins">45</div>
-                            <span id="laurentWinsTrend" style="font-size: 1.2em;"></span>
+                            <div style="font-size: 2em; font-weight: 700; color: var(--player1-blue);" id="playerOneWins">45</div>
+                            <span id="playerOneWinsTrend" style="font-size: 1.2em;"></span>
                         </div>
                     </div>
                     <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid rgba(212, 165, 116, 0.3);">
-                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" data-player="player2">Jean Luc</div>
+                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" data-player="player2">Joueur 2</div>
                         <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px;">
-                            <div style="font-size: 2em; font-weight: 700; color: var(--jean-gold);" id="jeanWins">45</div>
-                            <span id="jeanWinsTrend" style="font-size: 1.2em;"></span>
+                            <div style="font-size: 2em; font-weight: 700; color: var(--player2-gold);" id="playerTwoWins">45</div>
+                            <span id="playerTwoWinsTrend" style="font-size: 1.2em;"></span>
                         </div>
                     </div>
                 </div>
@@ -999,13 +1031,13 @@
                 </h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid rgba(107, 142, 201, 0.3);">
-                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" data-player="player1">Laurent</div>
-                        <div style="font-size: 2em; font-weight: 700; color: var(--laurent-blue);" id="laurentAvgAvg">0.00</div>
+                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" data-player="player1">Joueur 1</div>
+                        <div style="font-size: 2em; font-weight: 700; color: var(--player1-blue);" id="playerOneAvgAvg">0.00</div>
                         <div style="font-size: 0.85em; color: #999; margin-top: 5px;">pts/reprise en moyenne</div>
                     </div>
                     <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid rgba(212, 165, 116, 0.3);">
-                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" data-player="player2">Jean Luc</div>
-                        <div style="font-size: 2em; font-weight: 700; color: var(--jean-gold);" id="jeanAvgAvg">0.00</div>
+                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" data-player="player2">Joueur 2</div>
+                        <div style="font-size: 2em; font-weight: 700; color: var(--player2-gold);" id="playerTwoAvgAvg">0.00</div>
                         <div style="font-size: 0.85em; color: #999; margin-top: 5px;">pts/reprise en moyenne</div>
                     </div>
                 </div>
@@ -1019,18 +1051,18 @@
                 </h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div style="text-align: center;">
-                        <div style="font-size: 1.5em; font-weight: 700; color: var(--laurent-blue); margin-bottom: 8px;">
-                            <span id="laurentRatio">50%</span>
-                            <span id="laurentTrend" style="font-size: 0.8em; margin-left: 5px;"></span>
+                        <div style="font-size: 1.5em; font-weight: 700; color: var(--player1-blue); margin-bottom: 8px;">
+                            <span id="playerOneRatio">50%</span>
+                            <span id="playerOneTrend" style="font-size: 0.8em; margin-left: 5px;"></span>
                         </div>
-                        <div style="font-size: 0.9em; color: #666;" data-player="player1">Laurent</div>
+                        <div style="font-size: 0.9em; color: #666;" data-player="player1">Joueur 1</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="font-size: 1.5em; font-weight: 700; color: var(--jean-gold); margin-bottom: 8px;">
-                            <span id="jeanRatio">50%</span>
-                            <span id="jeanTrend" style="font-size: 0.8em; margin-left: 5px;"></span>
+                        <div style="font-size: 1.5em; font-weight: 700; color: var(--player2-gold); margin-bottom: 8px;">
+                            <span id="playerTwoRatio">50%</span>
+                            <span id="playerTwoTrend" style="font-size: 0.8em; margin-left: 5px;"></span>
                         </div>
-                        <div style="font-size: 0.9em; color: #666;" data-player="player2">Jean Luc</div>
+                        <div style="font-size: 0.9em; color: #666;" data-player="player2">Joueur 2</div>
                     </div>
                 </div>
                 <div style="text-align: center; margin-top: 12px; font-size: 0.9em; color: #999;">
@@ -1043,9 +1075,9 @@
                     <span aria-hidden="true">📊</span> Différentiel (évolution)
                 </h3>
                 <div style="text-align: center; background: white; padding: 20px; border-radius: 8px; border: 2px solid rgba(212, 165, 116, 0.3); margin-bottom: 15px;">
-                    <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" id="differentialLabel">Différentiel Jean Luc - Laurent</div>
-                    <div style="font-size: 3em; font-weight: 700; color: var(--jean-gold);" id="scoreDifference">+0</div>
-                    <div style="font-size: 0.85em; color: #999; margin-top: 5px;" id="differentialNote">points d'avance (Jean Luc positif)</div>
+                    <div style="font-size: 0.9em; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;" id="differentialLabel">Différentiel Joueur 2 - Joueur 1</div>
+                    <div style="font-size: 3em; font-weight: 700; color: var(--player2-gold);" id="scoreDifference">+0</div>
+                    <div style="font-size: 0.85em; color: #999; margin-top: 5px;" id="differentialNote">points d'avance (Joueur 2 positif)</div>
                 </div>
                 <div style="text-align: center; margin-top: 12px; font-size: 0.9em; color: #999;">
                     👆 Cliquez pour voir la courbe d'évolution
@@ -1186,6 +1218,23 @@
         </div>
     </div>
 
+    <!-- Modal pour le déroulement des victoires -->
+    <div id="winsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Déroulement des victoires</h2>
+                <button class="modal-close" onclick="closeWinsModal()">
+                    <span aria-hidden="true">✕</span>
+                </button>
+            </div>
+            <div style="margin-top: 20px;">
+                <div class="chart-container">
+                    <canvas id="winsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal pour annoncer le vainqueur -->
     <!-- Proposition d'export en fin de partie -->
     <div id="exportPromptModal" class="modal">
@@ -1212,7 +1261,7 @@
     <div id="winnerModal" class="modal">
         <div class="modal-content" style="max-width: 600px; text-align: center; padding: 60px 40px;">
             <div style="font-size: 5em; margin-bottom: 30px; animation: bounce 0.6s ease-in-out;">🏆</div>
-            <h2 id="winnerName" style="font-family: 'Playfair Display', serif; font-size: 2.8em; color: var(--secondary); margin-bottom: 10px;">Laurent</h2>
+            <h2 id="winnerName" style="font-family: 'Playfair Display', serif; font-size: 2.8em; color: var(--secondary); margin-bottom: 10px;">Joueur 1</h2>
             <p style="font-size: 1.3em; color: #666; margin-bottom: 30px;">a remporté la partie !</p>
             <div id="winnerDetails" style="background: var(--light); padding: 20px; border-radius: 10px; margin-bottom: 30px; font-size: 1.1em;">
                 <p><strong>Score final</strong></p>
@@ -1250,27 +1299,27 @@
 
             <div class="modal-grid">
                 <div class="modal-info-item">
-                    <strong id="modalPlayer1Name">Laurent</strong>
+                    <strong id="modalPlayer1Name">Joueur 1</strong>
                     <span id="modalScore1">0</span>
                 </div>
                 <div class="modal-info-item">
-                    <strong id="modalPlayer2Name">Jean Luc</strong>
+                    <strong id="modalPlayer2Name">Joueur 2</strong>
                     <span id="modalScore2">0</span>
                 </div>
                 <div class="modal-info-item">
-                    <strong>Moyenne <span id="modalAvgLabel1">Laurent</span></strong>
+                    <strong>Moyenne <span id="modalAvgLabel1">Joueur 1</span></strong>
                     <span id="modalAvg1">0.0</span>
                 </div>
                 <div class="modal-info-item">
-                    <strong>Moyenne <span id="modalAvgLabel2">Jean Luc</span></strong>
+                    <strong>Moyenne <span id="modalAvgLabel2">Joueur 2</span></strong>
                     <span id="modalAvg2">0.0</span>
                 </div>
                 <div class="modal-info-item">
-                    <strong>Reprises vides <span id="modalEmptyLabel1">Laurent</span></strong>
+                    <strong>Reprises vides <span id="modalEmptyLabel1">Joueur 1</span></strong>
                     <span id="modalEmptyReprises1" style="color: #999;">0%</span>
                 </div>
                 <div class="modal-info-item">
-                    <strong>Reprises vides <span id="modalEmptyLabel2">Jean Luc</span></strong>
+                    <strong>Reprises vides <span id="modalEmptyLabel2">Joueur 2</span></strong>
                     <span id="modalEmptyReprises2" style="color: #999;">0%</span>
                 </div>
             </div>
@@ -1515,7 +1564,7 @@
         let currentFilter = 'all';
         let chartInstance = null;
         let pointsInputValue = '';
-        let currentPlayer = null; // 'LAURENT' ou 'JEAN LUC'
+        let currentPlayer = null; // nom du joueur 1 ou du joueur 2
         let matchStartTime = null; // Heure de début de partie
 
         // Proposition d'export en fin de partie (après splash de victoire puis fenêtre de stats)
@@ -1571,7 +1620,7 @@
                 return { key1: null, key2: null };
             }
             
-            // Les clés sont généralement [joueur1Key, jeanLuc] ou similaire
+            // Les clés sont généralement [joueur1Key, playerTwo] ou similaire
             // On prend les 2 premières clés (après 'num')
             return {
                 key1: allKeys[0],
@@ -1634,22 +1683,22 @@
                 // Player1 commence (J1)
                 document.getElementById('player1Name').textContent = player1Name;
                 document.getElementById('player2Name').textContent = player2Name;
-                document.getElementById('player1Card').style.background = 'linear-gradient(135deg, var(--laurent-blue) 0%, #5a7db8 100%)';
-                document.getElementById('player2Card').style.background = 'linear-gradient(135deg, var(--jean-gold) 0%, #c9985f 100%)';
+                document.getElementById('player1Card').style.background = 'linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%)';
+                document.getElementById('player2Card').style.background = 'linear-gradient(135deg, var(--player2-gold) 0%, #c9985f 100%)';
                 
                 // Boutons dans l'ordre correct : Player1 à gauche, Player2 à droite
-                document.getElementById('buttonSlot1').innerHTML = `<button class="btn-player1" onclick="validatePointsLaurent()" style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--laurent-blue) 0%, #5a7db8 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(107, 142, 201, 0.3); transition: all 0.3s ease;"><span aria-hidden="true">✓</span> ${player1Name}</button>`;
-                document.getElementById('buttonSlot2').innerHTML = `<button class="btn-player2" onclick="validatePointsJean()" style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--jean-gold) 0%, #c9985f 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3); transition: all 0.3s ease;"><span aria-hidden="true">✓</span> ${player2Name}</button>`;
+                document.getElementById('buttonSlot1').innerHTML = `<button class="btn-player1" onclick="validatePointsPlayerOne()" style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(107, 142, 201, 0.3); transition: all 0.3s ease;"><span aria-hidden="true">✓</span> ${player1Name}</button>`;
+                document.getElementById('buttonSlot2').innerHTML = `<button class="btn-player2" onclick="validatePointsPlayerTwo()" style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--player2-gold) 0%, #c9985f 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3); transition: all 0.3s ease;"><span aria-hidden="true">✓</span> ${player2Name}</button>`;
             } else {
                 // Player2 commence (J1)
                 document.getElementById('player1Name').textContent = player2Name;
                 document.getElementById('player2Name').textContent = player1Name;
-                document.getElementById('player1Card').style.background = 'linear-gradient(135deg, var(--jean-gold) 0%, #c9985f 100%)';
-                document.getElementById('player2Card').style.background = 'linear-gradient(135deg, var(--laurent-blue) 0%, #5a7db8 100%)';
+                document.getElementById('player1Card').style.background = 'linear-gradient(135deg, var(--player2-gold) 0%, #c9985f 100%)';
+                document.getElementById('player2Card').style.background = 'linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%)';
                 
                 // Boutons dans l'ordre correct : Player2 à gauche, Player1 à droite
-                document.getElementById('buttonSlot1').innerHTML = `<button class="btn-player2" onclick="validatePointsJean()" style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--jean-gold) 0%, #c9985f 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3); transition: all 0.3s ease;"><span aria-hidden="true">✓</span> ${player2Name}</button>`;
-                document.getElementById('buttonSlot2').innerHTML = `<button class="btn-player1" onclick="validatePointsLaurent()" style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--laurent-blue) 0%, #5a7db8 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(107, 142, 201, 0.3); transition: all 0.3s ease;"><span aria-hidden="true">✓</span> ${player1Name}</button>`;
+                document.getElementById('buttonSlot1').innerHTML = `<button class="btn-player2" onclick="validatePointsPlayerTwo()" style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--player2-gold) 0%, #c9985f 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3); transition: all 0.3s ease;"><span aria-hidden="true">✓</span> ${player2Name}</button>`;
+                document.getElementById('buttonSlot2').innerHTML = `<button class="btn-player1" onclick="validatePointsPlayerOne()" style="width: 100%; opacity: 0.5; cursor: not-allowed; padding: 20px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(107, 142, 201, 0.3); transition: all 0.3s ease;"><span aria-hidden="true">✓</span> ${player1Name}</button>`;
             }
             
             // Masquer le splash screen
@@ -1687,9 +1736,9 @@
             const tapped = document.getElementById('player' + cardNum + 'Name').textContent;
             if (tapped !== currentPlayer) return; // pas son tour
             if (currentPlayer === player1Name) {
-                validatePointsLaurent();
+                validatePointsPlayerOne();
             } else {
-                validatePointsJean();
+                validatePointsPlayerTwo();
             }
         }
 
@@ -1807,93 +1856,12 @@
             showMessage(`Reprise ${lastReprise.num} annulée — scores corrigés`, 'success');
         }
 
-        // --- Auto-sauvegarde JSON ---
-
-        // Masquer la liaison de fichier JSON si non supportée (iPad / Safari)
-        window.addEventListener('DOMContentLoaded', function () {
-            if (!window.showOpenFilePicker) {
-                const b = document.getElementById('btnLinkJson');
-                if (b) b.style.display = 'none';
-            }
-        });
-
-        // Handle vers le fichier JSON lié
-        let linkedJsonFileHandle = null;
-
-        // Lier un fichier JSON existant pour l'auto-sauvegarde
-        async function linkJsonFile() {
-            try {
-                if (!window.showOpenFilePicker) {
-                    showMessage('Auto-sauvegarde non disponible (nécessite Chrome/Edge 86+)', 'error');
-                    return;
-                }
-                const [fileHandle] = await window.showOpenFilePicker({
-                    types: [{ description: 'Fichier JSON', accept: { 'application/json': ['.json'] } }],
-                    multiple: false
-                });
-                linkedJsonFileHandle = fileHandle;
-                updateLinkedFileLabel();
-                showMessage(`Fichier lié : ${fileHandle.name} — les sauvegardes seront automatiques`, 'success');
-            } catch (error) {
-                if (error.name !== 'AbortError') {
-                    showMessage('Erreur lors de la liaison du fichier : ' + error.message, 'error');
-                }
-            }
-        }
-
-        // Mettre à jour le label du bouton de liaison
-        function updateLinkedFileLabel() {
-            const btn = document.getElementById('btnLinkJson');
-            if (!btn) return;
-            if (linkedJsonFileHandle) {
-                btn.textContent = `🔗 ${linkedJsonFileHandle.name}`;
-                btn.title = `Fichier lié : ${linkedJsonFileHandle.name}`;
-                btn.style.background = '#d4edda';
-                btn.style.color = '#155724';
-                btn.style.borderColor = '#c3e6cb';
-            } else {
-                btn.textContent = '🔗 Lier un fichier JSON (auto-sauvegarde)';
-                btn.style.background = '';
-                btn.style.color = '';
-                btn.style.borderColor = '';
-            }
-        }
-
-        // Écrire dans le fichier JSON lié
-        async function writeToLinkedFile() {
-            if (!linkedJsonFileHandle) return;
-            try {
-                // Demander la permission directement (plus fiable que queryPermission)
-                const permission = await linkedJsonFileHandle.requestPermission({ mode: 'readwrite' });
-                if (permission !== 'granted') {
-                    showMessage('⚠️ Permission refusée — sauvegarde JSON impossible. Re-liez le fichier.', 'error');
-                    linkedJsonFileHandle = null;
-                    updateLinkedFileLabel();
-                    return;
-                }
-                const data = {
-                    players: { player1: player1Name, player2: player2Name },
-                    matches: matches,
-                    exportDate: new Date().toISOString()
-                };
-                const writable = await linkedJsonFileHandle.createWritable();
-                await writable.write(JSON.stringify(data, null, 2));
-                await writable.close();
-                console.log('Auto-sauvegarde JSON OK :', linkedJsonFileHandle.name);
-                showMessage(`💾 Sauvegardé dans ${linkedJsonFileHandle.name}`, 'success');
-            } catch (e) {
-                console.error('Erreur auto-sauvegarde JSON:', e);
-                showMessage('⚠️ Erreur sauvegarde JSON : ' + e.message, 'error');
-            }
-        }
-
-        // Sauvegarder dans le localStorage (+ fichier JSON lié si défini)
+        // Sauvegarder dans le localStorage
         function saveToLocalStorage() {
             try {
                 localStorage.setItem('billard_matches', JSON.stringify(matches));
                 updateChangePlayersButtonVisibility();
                 console.log('Données sauvegardées en local');
-                writeToLinkedFile();
             } catch (e) {
                 console.error('Erreur lors de la sauvegarde:', e);
             }
@@ -1922,13 +1890,13 @@
                 return null; // Continuer le jeu
             }
             
-            // Laurent gagne (au-dessus de l'objectif ET devant)
+            // Joueur 1 gagne (au-dessus de l'objectif ET devant)
             if (currentMatch.totalScore1 >= obj && 
                 currentMatch.totalScore1 > currentMatch.totalScore2) {
                 return player1Name;
             }
             
-            // Jean Luc gagne (au-dessus de l'objectif ET devant)
+            // Joueur 2 gagne (au-dessus de l'objectif ET devant)
             if (currentMatch.totalScore2 >= obj && 
                 currentMatch.totalScore2 > currentMatch.totalScore1) {
                 return player2Name;
@@ -1971,8 +1939,8 @@
             }, 3000);
         }
 
-        // Valider les points pour Laurent
-        function validatePointsLaurent() {
+        // Valider les points pour Joueur 1
+        function validatePointsPlayerOne() {
             // Si champ vide, c'est 0 point (reprise vide)
             const points = pointsInputValue === '' ? 0 : parseInt(pointsInputValue);
             
@@ -2028,8 +1996,8 @@
             }
         }
 
-        // Valider les points pour Jean Luc
-        function validatePointsJean() {
+        // Valider les points pour Joueur 2
+        function validatePointsPlayerTwo() {
             // Si champ vide, c'est 0 point (reprise vide)
             const points = pointsInputValue === '' ? 0 : parseInt(pointsInputValue);
             
@@ -2092,9 +2060,9 @@
             // Si quelqu'un vient d'atteindre l'objectif
             if (objectiveReachedBy === null && (currentMatch.s1 >= obj || currentMatch.s2 >= obj)) {
                 if (currentMatch.s1 >= obj) {
-                    objectiveReachedBy = 'LAURENT';
+                    objectiveReachedBy = player1Name;
                 } else {
-                    objectiveReachedBy = 'JEAN LUC';
+                    objectiveReachedBy = player2Name;
                 }
                 
                 console.log(`${objectiveReachedBy} a atteint l'objectif. Premier joueur de la partie: ${currentMatch.firstPlayer}`);
@@ -2107,7 +2075,7 @@
                 } else {
                     // C'est le 2ème joueur qui atteint - afficher immédiatement
                     console.log('>>> C\'EST LE 2ème JOUEUR - AFFICHER IMMÉDIATEMENT');
-                    const winner = currentMatch.s1 > currentMatch.s2 ? 'Laurent' : 'Jean Luc';
+                    const winner = currentMatch.s1 > currentMatch.s2 ? player1Name : player2Name;
                     showWinnerSplash(winner, currentMatch.s1, currentMatch.s2);
                     return;
                 }
@@ -2117,7 +2085,7 @@
             if (objectiveReachedBy !== null && objectiveReachedBy === currentMatch.firstPlayer) {
                 // Le 2ème joueur vient de jouer (c'est lui qui appelle checkWinner)
                 console.log('>>> LE 2ème JOUEUR VIENT DE JOUER - AFFICHER VAINQUEUR');
-                const winner = currentMatch.s1 > currentMatch.s2 ? 'Laurent' : 'Jean Luc';
+                const winner = currentMatch.s1 > currentMatch.s2 ? player1Name : player2Name;
                 showWinnerSplash(winner, currentMatch.s1, currentMatch.s2);
             }
         }
@@ -2157,8 +2125,8 @@
             
             // Calculer les top 3 séries depuis le jeu
             const bestSeries = {
-                laurent: getTop3Series(series1),
-                jeanLuc: getTop3Series(series2)
+                playerOne: getTop3Series(series1),
+                playerTwo: getTop3Series(series2)
             };
             
             const newMatch = {
@@ -2176,7 +2144,7 @@
                 s1: currentMatch.totalScore1,
                 s2: currentMatch.totalScore2,
                 bestSeries: bestSeries,
-                reprises: currentMatch.reprisesData.map(r => ({ num: r.num, laurent: r.s1, jeanLuc: r.s2 }))
+                reprises: currentMatch.reprisesData.map(r => ({ num: r.num, playerOne: r.s1, playerTwo: r.s2 }))
             };
             
             console.log('newMatch créé:', newMatch);
@@ -2240,7 +2208,7 @@
                     displayPointsDetail();
                 };
                 btn.onmouseover = () => {
-                    btn.style.background = 'linear-gradient(135deg, var(--laurent-blue) 0%, var(--jean-gold) 100%)';
+                    btn.style.background = 'linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%)';
                     btn.style.color = 'white';
                     btn.style.transform = 'translateY(-3px)';
                     btn.style.boxShadow = '0 6px 15px rgba(0,0,0,0.15)';
@@ -2346,8 +2314,8 @@
                 const { key1, key2 } = getPlayerKeys(match);
                 if (key1 && key2) {
                     pointsData = {
-                        laurent: match.reprises.map(r => r[key1]),
-                        jeanLuc: match.reprises.map(r => r[key2])
+                        playerOne: match.reprises.map(r => r[key1]),
+                        playerTwo: match.reprises.map(r => r[key2])
                     };
                 }
             }
@@ -2364,12 +2332,12 @@
                 <div style="margin-bottom: 20px;">
                     <h3 style="color: var(--primary); margin-bottom: 15px;">Partie ${match.num} - ${match.date}</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div style="background: linear-gradient(135deg, var(--laurent-blue) 0%, #5a7db8 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="background: linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
                             <div style="font-size: 0.9em; margin-bottom: 10px;">${name1}</div>
                             <div style="font-size: 2.5em; font-weight: 700;">${match.s1}</div>
                             <div style="font-size: 0.85em; margin-top: 5px;">en ${reprisesCount} reprises — moy. ${avgA}</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, var(--jean-gold) 0%, #c9985f 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="background: linear-gradient(135deg, var(--player2-gold) 0%, #c9985f 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
                             <div style="font-size: 0.9em; margin-bottom: 10px;">${name2}</div>
                             <div style="font-size: 2.5em; font-weight: 700;">${match.s2}</div>
                             <div style="font-size: 0.85em; margin-top: 5px;">en ${reprisesCount} reprises — moy. ${avgB}</div>
@@ -2379,7 +2347,7 @@
 
                 <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
                     <thead>
-                        <tr style="background: linear-gradient(135deg, var(--laurent-blue) 0%, var(--jean-gold) 100%); color: white;">
+                        <tr style="background: linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%); color: white;">
                             <th style="padding: 12px; text-align: center; font-weight: 600;">Reprise</th>
                             <th style="padding: 12px; text-align: center; font-weight: 600;">${name1}</th>
                             <th style="padding: 12px; text-align: center; font-weight: 600;">${name2}</th>
@@ -2390,15 +2358,15 @@
 
             // Ajouter les points pour chaque reprise
             for (let i = 0; i < reprisesCount; i++) {
-                const laurentScore = pointsData.laurent[i];
-                const jeanScore = pointsData.jeanLuc[i];
-                const isLaurentAhead = laurentScore > jeanScore;
+                const playerOneScore = pointsData.playerOne[i];
+                const playerTwoScore = pointsData.playerTwo[i];
+                const isPlayerOneAhead = playerOneScore > playerTwoScore;
                 
                 html += `
                     <tr style="border-top: 1px solid var(--border);">
                         <td style="padding: 12px; text-align: center; font-weight: 600; color: var(--primary);">R${i + 1}</td>
-                        <td style="padding: 12px; text-align: center; background: ${isLaurentAhead ? 'rgba(107, 142, 201, 0.1)' : 'transparent'}; font-weight: 600; color: var(--laurent-blue);">${laurentScore}</td>
-                        <td style="padding: 12px; text-align: center; background: ${!isLaurentAhead && jeanScore > laurentScore ? 'rgba(212, 165, 116, 0.1)' : 'transparent'}; font-weight: 600; color: var(--jean-gold);">${jeanScore}</td>
+                        <td style="padding: 12px; text-align: center; background: ${isPlayerOneAhead ? 'rgba(107, 142, 201, 0.1)' : 'transparent'}; font-weight: 600; color: var(--player1-blue);">${playerOneScore}</td>
+                        <td style="padding: 12px; text-align: center; background: ${!isPlayerOneAhead && playerTwoScore > playerOneScore ? 'rgba(212, 165, 116, 0.1)' : 'transparent'}; font-weight: 600; color: var(--player2-gold);">${playerTwoScore}</td>
                     </tr>
                 `;
             }
@@ -2408,13 +2376,13 @@
                     <tfoot>
                         <tr style="border-top: 2px solid var(--border); background: var(--light);">
                             <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--primary);">Total</td>
-                            <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--laurent-blue);">${match.s1}</td>
-                            <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--jean-gold);">${match.s2}</td>
+                            <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--player1-blue);">${match.s1}</td>
+                            <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--player2-gold);">${match.s2}</td>
                         </tr>
                         <tr style="background: var(--light);">
                             <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--primary);">Moyenne</td>
-                            <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--laurent-blue);">${avgA}</td>
-                            <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--jean-gold);">${avgB}</td>
+                            <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--player1-blue);">${avgA}</td>
+                            <td style="padding: 12px; text-align: center; font-weight: 700; color: var(--player2-gold);">${avgB}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -2442,6 +2410,12 @@
                     openMatchModal(lastMatch.num);
                 }, 300);
             }
+
+            // Filet de sécurité : si la fiche de partie ne s'est pas ouverte, proposer l'export quand même
+            setTimeout(() => {
+                const mm = document.getElementById('matchModal');
+                if (!mm || !mm.classList.contains('show')) maybeShowExportPrompt();
+            }, 1500);
         }
 
         // Charger depuis le localStorage
@@ -2533,10 +2507,10 @@
                     <div style="max-height: 400px; overflow-y: auto;">
                         <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
                             <thead>
-                                <tr style="background: linear-gradient(135deg, var(--laurent-blue) 0%, var(--jean-gold) 100%); color: white; position: sticky; top: 0;">
+                                <tr style="background: linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%); color: white; position: sticky; top: 0;">
                                     <th style="padding: 12px; text-align: center; font-weight: 600;">Reprise</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Laurent</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Jean Luc</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600;">${player1Name}</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600;">${player2Name}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2544,15 +2518,15 @@
 
             // Ajouter les points pour chaque reprise
             for (let i = 0; i < match.reprises; i++) {
-                const laurentScore = pointsData.laurent[i];
-                const jeanScore = pointsData.jeanLuc[i];
-                const isLaurentAhead = laurentScore > jeanScore;
+                const playerOneScore = pointsData.playerOne[i];
+                const playerTwoScore = pointsData.playerTwo[i];
+                const isPlayerOneAhead = playerOneScore > playerTwoScore;
                 
                 html += `
                     <tr style="border-top: 1px solid var(--border);">
                         <td style="padding: 12px; text-align: center; font-weight: 600; color: var(--primary);">R${i + 1}</td>
-                        <td style="padding: 12px; text-align: center; background: ${isLaurentAhead ? 'rgba(107, 142, 201, 0.1)' : 'transparent'}; font-weight: 600; color: var(--laurent-blue);">${laurentScore}</td>
-                        <td style="padding: 12px; text-align: center; background: ${!isLaurentAhead && jeanScore > laurentScore ? 'rgba(212, 165, 116, 0.1)' : 'transparent'}; font-weight: 600; color: var(--jean-gold);">${jeanScore}</td>
+                        <td style="padding: 12px; text-align: center; background: ${isPlayerOneAhead ? 'rgba(107, 142, 201, 0.1)' : 'transparent'}; font-weight: 600; color: var(--player1-blue);">${playerOneScore}</td>
+                        <td style="padding: 12px; text-align: center; background: ${!isPlayerOneAhead && playerTwoScore > playerOneScore ? 'rgba(212, 165, 116, 0.1)' : 'transparent'}; font-weight: 600; color: var(--player2-gold);">${playerTwoScore}</td>
                     </tr>
                 `;
             }
@@ -2643,9 +2617,9 @@
                 }
             } 
             // Compatibilité ancien format
-            else if (match.pointsByReprise && match.pointsByReprise.laurent && match.pointsByReprise.jeanLuc) {
-                const pointsByReprise1 = match.pointsByReprise.laurent;
-                const pointsByReprise2 = match.pointsByReprise.jeanLuc;
+            else if (match.pointsByReprise && Object.keys(match.pointsByReprise).length >= 2) {
+                const pointsByReprise1 = Object.values(match.pointsByReprise)[0];
+                const pointsByReprise2 = Object.values(match.pointsByReprise)[1];
                 
                 const emptyReprises1 = pointsByReprise1.filter(p => p === 0).length;
                 const emptyReprises2 = pointsByReprise2.filter(p => p === 0).length;
@@ -2728,8 +2702,8 @@
                 }
             }
             // Ancien format : pointsByReprise
-            else if (match.pointsByReprise && match.pointsByReprise.laurent && match.pointsByReprise.jeanLuc) {
-                pointsData = generateFromActualData(match.pointsByReprise.laurent, match.pointsByReprise.jeanLuc);
+            else if (match.pointsByReprise && Object.keys(match.pointsByReprise).length >= 2) {
+                pointsData = generateFromActualData(Object.values(match.pointsByReprise)[0], Object.values(match.pointsByReprise)[1]);
             } 
             // Fallback : générer des données réalistes
             else {
@@ -2745,7 +2719,7 @@
                     datasets: [
                         {
                             label: player1Name,
-                            data: pointsData.laurent,
+                            data: pointsData.playerOne,
                             borderColor: '#6b8ec9',
                             backgroundColor: 'rgba(107, 142, 201, 0.1)',
                             borderWidth: 3,
@@ -2759,7 +2733,7 @@
                         },
                         {
                             label: player2Name,
-                            data: pointsData.jeanLuc,
+                            data: pointsData.playerTwo,
                             borderColor: '#d4a574',
                             backgroundColor: 'rgba(212, 165, 116, 0.1)',
                             borderWidth: 3,
@@ -2829,34 +2803,34 @@
         }
         
         // Générer le graphique à partir des vraies données
-        function generateFromActualData(laurentPoints, jeanPoints) {
+        function generateFromActualData(playerOnePoints, playerTwoPoints) {
             const labels = [];
-            const laurent = [];
-            const jeanLuc = [];
+            const playerOne = [];
+            const playerTwo = [];
             
             let cumul1 = 0;
             let cumul2 = 0;
             
-            for (let i = 0; i < laurentPoints.length; i++) {
-                cumul1 += laurentPoints[i];
-                cumul2 += jeanPoints[i];
+            for (let i = 0; i < playerOnePoints.length; i++) {
+                cumul1 += playerOnePoints[i];
+                cumul2 += playerTwoPoints[i];
                 
-                laurent.push(cumul1);
-                jeanLuc.push(cumul2);
+                playerOne.push(cumul1);
+                playerTwo.push(cumul2);
                 
                 // Étiquetage sélectif
                 let label = '';
                 if (i === 0) {
                     label = '0';
-                } else if (i === laurentPoints.length - 1) {
-                    label = `R${laurentPoints.length}`;
-                } else if ((i + 1) % Math.ceil(laurentPoints.length / 10) === 0) {
+                } else if (i === playerOnePoints.length - 1) {
+                    label = `R${playerOnePoints.length}`;
+                } else if ((i + 1) % Math.ceil(playerOnePoints.length / 10) === 0) {
                     label = `R${i + 1}`;
                 }
                 labels.push(label);
             }
             
-            return { labels, laurent, jeanLuc };
+            return { labels, playerOne, playerTwo };
         }
 
         // Générer le graphique à barres (points par reprise)
@@ -2878,9 +2852,9 @@
                 }
             }
             // Ancien format
-            else if (match.pointsByReprise && match.pointsByReprise.laurent && match.pointsByReprise.jeanLuc) {
-                pointsByReprise1 = match.pointsByReprise.laurent;
-                pointsByReprise2 = match.pointsByReprise.jeanLuc;
+            else if (match.pointsByReprise && Object.keys(match.pointsByReprise).length >= 2) {
+                pointsByReprise1 = Object.values(match.pointsByReprise)[0];
+                pointsByReprise2 = Object.values(match.pointsByReprise)[1];
             } else {
                 return; // Pas de données
             }
@@ -2977,8 +2951,8 @@
         // Générer des scores progressifs réalistes
         function generateProgressiveScores(finalScore1, finalScore2, reprises) {
             const labels = [];
-            const laurent = [];
-            const jeanLuc = [];
+            const playerOne = [];
+            const playerTwo = [];
             
             // Reconstruction fidèle : supposer une distribution réaliste mais reproductible
             // basée sur les scores finaux et le nombre de reprises
@@ -3003,17 +2977,17 @@
                 const rand2 = Math.abs(Math.sin(seed + 0.5) * 10000) % 1;
                 
                 // Déterminer qui joue cette reprise
-                const isLaurent = (i + Math.floor(finalScore1)) % 2 === 0;
+                const isPlayerOne = (i + Math.floor(finalScore1)) % 2 === 0;
                 
-                if (isLaurent && remaining1 > 0) {
-                    // Laurent joue : entre 0 et 3x sa moyenne (plus de variance)
+                if (isPlayerOne && remaining1 > 0) {
+                    // Joueur 1 joue : entre 0 et 3x sa moyenne (plus de variance)
                     const factor = rand1 * 3;
                     let pointsThisReprise = Math.round(avgPoints1 * factor);
                     pointsThisReprise = Math.min(pointsThisReprise, remaining1);
                     reprisePoints1[i] = pointsThisReprise;
                     remaining1 -= pointsThisReprise;
-                } else if (!isLaurent && remaining2 > 0) {
-                    // Jean Luc joue : entre 0 et 3x sa moyenne (plus de variance)
+                } else if (!isPlayerOne && remaining2 > 0) {
+                    // Joueur 2 joue : entre 0 et 3x sa moyenne (plus de variance)
                     const factor = rand2 * 3;
                     let pointsThisReprise = Math.round(avgPoints2 * factor);
                     pointsThisReprise = Math.min(pointsThisReprise, remaining2);
@@ -3055,15 +3029,15 @@
                 }
                 labels.push(label);
                 
-                laurent.push(cumul1);
-                jeanLuc.push(cumul2);
+                playerOne.push(cumul1);
+                playerTwo.push(cumul2);
             }
             
             // Assurer la monotonie finale exacte
-            laurent[reprises - 1] = finalScore1;
-            jeanLuc[reprises - 1] = finalScore2;
+            playerOne[reprises - 1] = finalScore1;
+            playerTwo[reprises - 1] = finalScore2;
             
-            return { labels, laurent, jeanLuc };
+            return { labels, playerOne, playerTwo };
         }
 
         // Initialiser l'affichage
@@ -3158,15 +3132,15 @@
             }
             
             document.getElementById('pointsInput').value = '';
-            const btnLaurent = document.getElementById('btnLaurent');
-            const btnJean = document.getElementById('btnJean');
-            if (btnLaurent) {
-                btnLaurent.disabled = true;
-                btnLaurent.style.opacity = '0.5';
+            const btnPlayerOne = document.getElementById('btnPlayerOne');
+            const btnPlayerTwo = document.getElementById('btnPlayerTwo');
+            if (btnPlayerOne) {
+                btnPlayerOne.disabled = true;
+                btnPlayerOne.style.opacity = '0.5';
             }
-            if (btnJean) {
-                btnJean.disabled = true;
-                btnJean.style.opacity = '0.5';
+            if (btnPlayerTwo) {
+                btnPlayerTwo.disabled = true;
+                btnPlayerTwo.style.opacity = '0.5';
             }
             
             // Réinitialiser et afficher le splash screen
@@ -3199,8 +3173,8 @@
             
             // Calculer les top 3 séries depuis le jeu
             const bestSeries = {
-                laurent: getTop3Series(series1),
-                jeanLuc: getTop3Series(series2)
+                playerOne: getTop3Series(series1),
+                playerTwo: getTop3Series(series2)
             };
             
             const newMatch = {
@@ -3218,7 +3192,7 @@
                 s1: currentMatch.totalScore1,
                 s2: currentMatch.totalScore2,
                 bestSeries: bestSeries,
-                reprises: currentMatch.reprisesData.map(r => ({ num: r.num, laurent: r.s1, jeanLuc: r.s2 }))
+                reprises: currentMatch.reprisesData.map(r => ({ num: r.num, playerOne: r.s1, playerTwo: r.s2 }))
             };
 
             // Ajouter à la fin du tableau
@@ -3249,44 +3223,44 @@
         // Mettre à jour les statistiques
         function updateStats() {
             const total = matches.length;
-            const laurent = matches.filter(m => m.winner === player1Name).length;
-            const jean = matches.filter(m => m.winner === player2Name).length;
+            const playerOne = matches.filter(m => m.winner === player1Name).length;
+            const playerTwo = matches.filter(m => m.winner === player2Name).length;
 
             document.getElementById('totalMatches').textContent = total;
-            document.getElementById('laurentWins').textContent = laurent;
-            document.getElementById('jeanWins').textContent = jean;
+            document.getElementById('playerOneWins').textContent = playerOne;
+            document.getElementById('playerTwoWins').textContent = playerTwo;
             
             // Calculer les tendances (dernières 5 parties vs 5 parties avant)
             if (matches.length >= 5) {
                 const recentMatches = matches.slice(-5);
                 const previousMatches = matches.length >= 10 ? matches.slice(-10, -5) : [];
                 
-                const recentLaurent = recentMatches.filter(m => m.winner === player1Name).length;
-                const recentJean = recentMatches.filter(m => m.winner === player2Name).length;
-                const previousLaurent = previousMatches.filter(m => m.winner === player1Name).length;
-                const previousJean = previousMatches.filter(m => m.winner === player2Name).length;
+                const recentPlayerOne = recentMatches.filter(m => m.winner === player1Name).length;
+                const recentPlayerTwo = recentMatches.filter(m => m.winner === player2Name).length;
+                const previousPlayerOne = previousMatches.filter(m => m.winner === player1Name).length;
+                const previousPlayerTwo = previousMatches.filter(m => m.winner === player2Name).length;
                 
-                // Tendance Laurent
-                let laurentTrend = '';
-                if (recentLaurent > previousLaurent) {
-                    laurentTrend = '📈';
-                } else if (recentLaurent < previousLaurent) {
-                    laurentTrend = '📉';
+                // Tendance Joueur 1
+                let playerOneTrend = '';
+                if (recentPlayerOne > previousPlayerOne) {
+                    playerOneTrend = '📈';
+                } else if (recentPlayerOne < previousPlayerOne) {
+                    playerOneTrend = '📉';
                 } else {
-                    laurentTrend = '➡️';
+                    playerOneTrend = '➡️';
                 }
-                document.getElementById('laurentWinsTrend').textContent = laurentTrend;
+                document.getElementById('playerOneWinsTrend').textContent = playerOneTrend;
                 
-                // Tendance Jean
-                let jeanTrend = '';
-                if (recentJean > previousJean) {
-                    jeanTrend = '📈';
-                } else if (recentJean < previousJean) {
-                    jeanTrend = '📉';
+                // Tendance joueur 2
+                let playerTwoTrend = '';
+                if (recentPlayerTwo > previousPlayerTwo) {
+                    playerTwoTrend = '📈';
+                } else if (recentPlayerTwo < previousPlayerTwo) {
+                    playerTwoTrend = '📉';
                 } else {
-                    jeanTrend = '➡️';
+                    playerTwoTrend = '➡️';
                 }
-                document.getElementById('jeanWinsTrend').textContent = jeanTrend;
+                document.getElementById('playerTwoWinsTrend').textContent = playerTwoTrend;
             }
             
             // Mettre à jour les labels des cartouches
@@ -3296,67 +3270,67 @@
             });
             
             // Mettre à jour les noms dans les cartouches (si des éléments existent)
-            const laurentLabels = document.querySelectorAll('[data-player="player1"]');
-            const jeanLabels = document.querySelectorAll('[data-player="player2"]');
+            const playerOneLabels = document.querySelectorAll('[data-player="player1"]');
+            const playerTwoLabels = document.querySelectorAll('[data-player="player2"]');
             
-            laurentLabels.forEach(el => el.textContent = player1Name);
-            jeanLabels.forEach(el => el.textContent = player2Name);
+            playerOneLabels.forEach(el => el.textContent = player1Name);
+            playerTwoLabels.forEach(el => el.textContent = player2Name);
 
             // Calculer les ratios
-            const laurentRatio = total > 0 ? Math.round((laurent / total) * 100) : 0;
-            const jeanRatio = total > 0 ? Math.round((jean / total) * 100) : 0;
+            const playerOneRatio = total > 0 ? Math.round((playerOne / total) * 100) : 0;
+            const playerTwoRatio = total > 0 ? Math.round((playerTwo / total) * 100) : 0;
             
-            document.getElementById('laurentRatio').textContent = laurentRatio + '%';
-            document.getElementById('jeanRatio').textContent = jeanRatio + '%';
+            document.getElementById('playerOneRatio').textContent = playerOneRatio + '%';
+            document.getElementById('playerTwoRatio').textContent = playerTwoRatio + '%';
 
             // Calculer la tendance (comparer les 5 dernières parties avec les 5 précédentes)
             if (total >= 5) {
                 const recentMatches = matches.slice(0, 5);
                 const previousMatches = matches.slice(5, 10);
                 
-                const recentLaurent = recentMatches.filter(m => m.winner === 'LAURENT').length;
-                const previousLaurent = previousMatches.filter(m => m.winner === 'LAURENT').length;
+                const recentPlayerOne = recentMatches.filter(m => m.winner === player1Name).length;
+                const previousPlayerOne = previousMatches.filter(m => m.winner === player1Name).length;
                 
-                const recentJean = recentMatches.filter(m => m.winner === 'JEAN LUC').length;
-                const previousJean = previousMatches.filter(m => m.winner === 'JEAN LUC').length;
+                const recentPlayerTwo = recentMatches.filter(m => m.winner === player2Name).length;
+                const previousPlayerTwo = previousMatches.filter(m => m.winner === player2Name).length;
                 
-                // Tendance Laurent
-                const laurentTrend = recentLaurent - previousLaurent;
-                const laurentTrendEl = document.getElementById('laurentTrend');
-                if (laurentTrendEl) {
-                    if (laurentTrend > 0) {
-                        laurentTrendEl.textContent = '📈';
-                    } else if (laurentTrend < 0) {
-                        laurentTrendEl.textContent = '📉';
+                // Tendance Joueur 1
+                const playerOneTrend = recentPlayerOne - previousPlayerOne;
+                const playerOneTrendEl = document.getElementById('playerOneTrend');
+                if (playerOneTrendEl) {
+                    if (playerOneTrend > 0) {
+                        playerOneTrendEl.textContent = '📈';
+                    } else if (playerOneTrend < 0) {
+                        playerOneTrendEl.textContent = '📉';
                     } else {
-                        laurentTrendEl.textContent = '➡️';
+                        playerOneTrendEl.textContent = '➡️';
                     }
                 }
                 
-                // Tendance Jean
-                const jeanTrend = recentJean - previousJean;
-                const jeanTrendEl = document.getElementById('jeanTrend');
-                if (jeanTrendEl) {
-                    if (jeanTrend > 0) {
-                        jeanTrendEl.textContent = '📈';
-                    } else if (jeanTrend < 0) {
-                        jeanTrendEl.textContent = '📉';
+                // Tendance joueur 2
+                const playerTwoTrend = recentPlayerTwo - previousPlayerTwo;
+                const playerTwoTrendEl = document.getElementById('playerTwoTrend');
+                if (playerTwoTrendEl) {
+                    if (playerTwoTrend > 0) {
+                        playerTwoTrendEl.textContent = '📈';
+                    } else if (playerTwoTrend < 0) {
+                        playerTwoTrendEl.textContent = '📉';
                     } else {
-                        jeanTrendEl.textContent = '➡️';
+                        playerTwoTrendEl.textContent = '➡️';
                     }
                 }
             }
 
             // Calculer les totaux de points
-            let laurentTotal = 0;
-            let jeanTotal = 0;
+            let playerOneTotal = 0;
+            let playerTwoTotal = 0;
             matches.forEach(m => {
-                laurentTotal += m.s1;
-                jeanTotal += m.s2;
+                playerOneTotal += m.s1;
+                playerTwoTotal += m.s2;
             });
             
-            // Différentiel Jean Luc - Laurent (positif = Jean en avance)
-            const difference = jeanTotal - laurentTotal;
+            // Différentiel Joueur 2 - Joueur 1 (positif = joueur 2 en avance)
+            const difference = playerTwoTotal - playerOneTotal;
             const diffEl = document.getElementById('scoreDifference');
             
             // Mettre à jour le label du différentiel
@@ -3372,10 +3346,10 @@
             if (diffEl) {
                 if (difference > 0) {
                     diffEl.textContent = '+' + difference;
-                    diffEl.style.color = 'var(--jean-gold)';
+                    diffEl.style.color = 'var(--player2-gold)';
                 } else if (difference < 0) {
                     diffEl.textContent = difference;
-                    diffEl.style.color = 'var(--laurent-blue)';
+                    diffEl.style.color = 'var(--player1-blue)';
                 } else {
                     diffEl.textContent = '0';
                     diffEl.style.color = '#999';
@@ -3390,24 +3364,24 @@
         function updateAverageOfAverages() {
             const total = matches.length;
             
-            let laurentTotalAvg = 0;
-            let jeanTotalAvg = 0;
+            let playerOneTotalAvg = 0;
+            let playerTwoTotalAvg = 0;
             
             matches.forEach(match => {
                 // Déterminer le nombre de reprises
                 const reprisesCount = match.reprisesCount || (Array.isArray(match.reprises) ? match.reprises.length : match.reprises);
                 
                 if (reprisesCount > 0) {
-                    laurentTotalAvg += match.s1 / reprisesCount;
-                    jeanTotalAvg += match.s2 / reprisesCount;
+                    playerOneTotalAvg += match.s1 / reprisesCount;
+                    playerTwoTotalAvg += match.s2 / reprisesCount;
                 }
             });
             
-            const laurentAvgAvg = total > 0 ? (laurentTotalAvg / total).toFixed(2) : 0;
-            const jeanAvgAvg = total > 0 ? (jeanTotalAvg / total).toFixed(2) : 0;
+            const playerOneAvgAvg = total > 0 ? (playerOneTotalAvg / total).toFixed(2) : 0;
+            const playerTwoAvgAvg = total > 0 ? (playerTwoTotalAvg / total).toFixed(2) : 0;
             
-            document.getElementById('laurentAvgAvg').textContent = laurentAvgAvg;
-            document.getElementById('jeanAvgAvg').textContent = jeanAvgAvg;
+            document.getElementById('playerOneAvgAvg').textContent = playerOneAvgAvg;
+            document.getElementById('playerTwoAvgAvg').textContent = playerTwoAvgAvg;
             
             // Mettre à jour les meilleures séries
             updateTopSeries();
@@ -3422,8 +3396,7 @@
                 // Déterminer les clés pour bestSeries
                 let key1 = null;
                 if (match.bestSeries) {
-                    const bestSeriesKeys = Object.keys(match.bestSeries).filter(k => k !== 'jeanLuc');
-                    key1 = bestSeriesKeys[0] || null;
+                    key1 = Object.keys(match.bestSeries)[0] || null;
                 }
                 
                 // Ajouter les séries du joueur 1
@@ -3435,23 +3408,24 @@
                             matchNum: match.num,
                             date: match.date,
                             billard: match.billard,
-                            emoji: '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--laurent-blue);vertical-align:middle;"></span>',
-                            color: 'var(--laurent-blue)'
+                            emoji: '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--player1-blue);vertical-align:middle;"></span>',
+                            color: 'var(--player1-blue)'
                         });
                     });
                 }
                 
-                // Ajouter les séries de Jean Luc (ou joueur 2)
-                if (match.bestSeries && match.bestSeries.jeanLuc) {
-                    match.bestSeries.jeanLuc.forEach(serie => {
+                // Ajouter les séries de Joueur 2 (ou joueur 2)
+                const key2 = match.bestSeries ? (Object.keys(match.bestSeries)[1] || null) : null;
+                if (match.bestSeries && key2) {
+                    match.bestSeries[key2].forEach(serie => {
                         allSeries.push({
                             points: serie,
                             player: player2Name,
                             matchNum: match.num,
                             date: match.date,
                             billard: match.billard,
-                            emoji: '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--jean-gold);vertical-align:middle;"></span>',
-                            color: 'var(--jean-gold)'
+                            emoji: '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--player2-gold);vertical-align:middle;"></span>',
+                            color: 'var(--player2-gold)'
                         });
                     });
                 }
@@ -3556,6 +3530,96 @@
             }
         }
 
+        // Ouvrir la fenêtre du déroulement des victoires (nuage de points)
+        function openWinsModal() {
+            generateWinsChart();
+            document.getElementById('winsModal').classList.add('show');
+        }
+
+        // Fermer la fenêtre du déroulement des victoires
+        function closeWinsModal() {
+            document.getElementById('winsModal').classList.remove('show');
+            if (window.winsChartInstance) {
+                window.winsChartInstance.destroy();
+                window.winsChartInstance = null;
+            }
+        }
+
+        // Déroulement des victoires : victoires cumulées de chaque joueur (courbe en escalier) + un point par victoire
+        function generateWinsChart() {
+            if (window.winsChartInstance) {
+                window.winsChartInstance.destroy();
+            }
+            const ordered = [...matches].sort((a, b) => a.num - b.num);
+            const cum1 = [], cum2 = [], dots1 = [], dots2 = [];
+            let w1 = 0, w2 = 0;
+            ordered.forEach((m) => {
+                if (m.winner === player1Name) { w1++; dots1.push({ x: m.num, y: w1, partie: m.num }); }
+                else { w2++; dots2.push({ x: m.num, y: w2, partie: m.num }); }
+                cum1.push({ x: m.num, y: w1 });
+                cum2.push({ x: m.num, y: w2 });
+            });
+            const ctx = document.getElementById('winsChart').getContext('2d');
+            window.winsChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            type: 'line', label: player1Name, data: cum1, stepped: true,
+                            borderColor: '#6b8ec9', backgroundColor: 'rgba(107, 142, 201, 0.15)',
+                            borderWidth: 3, fill: true, pointRadius: 0
+                        },
+                        {
+                            type: 'line', label: player2Name, data: cum2, stepped: true,
+                            borderColor: '#d4a574', backgroundColor: 'rgba(212, 165, 116, 0.15)',
+                            borderWidth: 3, fill: true, pointRadius: 0
+                        },
+                        {
+                            type: 'scatter', label: player1Name + ' (victoire)', data: dots1,
+                            backgroundColor: '#6b8ec9', borderColor: '#ffffff', borderWidth: 2,
+                            pointRadius: 6, pointHoverRadius: 9
+                        },
+                        {
+                            type: 'scatter', label: player2Name + ' (victoire)', data: dots2,
+                            backgroundColor: '#d4a574', borderColor: '#ffffff', borderWidth: 2,
+                            pointRadius: 6, pointHoverRadius: 9
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'nearest', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, padding: 16, filter: item => !item.text.includes('(victoire)') }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: items => items[0].raw.partie ? `Partie #${items[0].raw.partie}` : `Partie #${items[0].raw.x}`,
+                                label: item => `${item.dataset.label.replace(' (victoire)', '')} : ${item.raw.y} victoire${item.raw.y > 1 ? 's' : ''}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: { display: true, text: 'Numéro de partie' },
+                            ticks: { precision: 0 },
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Victoires cumulées' },
+                            ticks: { precision: 0 },
+                            grid: { color: 'rgba(0,0,0,0.06)' }
+                        }
+                    }
+                }
+            });
+        }
+
         // Générer le graphique en aires empilées des taux de victoire
         function generateWinRateChart() {
             if (window.winRateChartInstance) {
@@ -3563,27 +3627,27 @@
             }
 
             const labels = [];
-            const laurent = [];
-            const jean = [];
+            const playerOne = [];
+            const playerTwo = [];
             
             // Parcourir les matches en ordre inverse (du plus ancien au plus récent)
             const sortedMatches = [...matches].reverse();
             
-            let laurentWins = 0;
-            let jeanWins = 0;
+            let playerOneWins = 0;
+            let playerTwoWins = 0;
             
             sortedMatches.forEach((match) => {
                 labels.push(`P${match.num}`);
                 
                 if (match.winner === player1Name) {
-                    laurentWins++;
+                    playerOneWins++;
                 } else {
-                    jeanWins++;
+                    playerTwoWins++;
                 }
                 
-                const total = laurentWins + jeanWins;
-                laurent.push(Math.round((laurentWins / total) * 100));
-                jean.push(Math.round((jeanWins / total) * 100));
+                const total = playerOneWins + playerTwoWins;
+                playerOne.push(Math.round((playerOneWins / total) * 100));
+                playerTwo.push(Math.round((playerTwoWins / total) * 100));
             });
             
             const ctx = document.getElementById('winRateChart').getContext('2d');
@@ -3594,7 +3658,7 @@
                     datasets: [
                         {
                             label: player1Name,
-                            data: laurent,
+                            data: playerOne,
                             borderColor: '#6b8ec9',
                             backgroundColor: 'rgba(107, 142, 201, 0.6)',
                             borderWidth: 2,
@@ -3609,7 +3673,7 @@
                         },
                         {
                             label: player2Name,
-                            data: jean,
+                            data: playerTwo,
                             borderColor: '#d4a574',
                             backgroundColor: 'rgba(212, 165, 116, 0.6)',
                             borderWidth: 2,
@@ -3696,11 +3760,11 @@
 
             // Calculer l'évolution des moyennes par partie
             const labels = [];
-            const laurentData = [];
-            const jeanData = [];
+            const playerOneData = [];
+            const playerTwoData = [];
             
-            let laurentCumulative = 0;
-            let jeanCumulative = 0;
+            let playerOneCumulative = 0;
+            let playerTwoCumulative = 0;
             
             // Parcourir les matches en ordre inverse (du plus ancien au plus récent)
             const sortedMatches = [...matches].reverse();
@@ -3712,12 +3776,12 @@
                 const reprisesCount = match.reprisesCount || (Array.isArray(match.reprises) ? match.reprises.length : match.reprises);
                 
                 if (reprisesCount > 0) {
-                    laurentCumulative += match.s1 / reprisesCount;
-                    jeanCumulative += match.s2 / reprisesCount;
+                    playerOneCumulative += match.s1 / reprisesCount;
+                    playerTwoCumulative += match.s2 / reprisesCount;
                 }
                 
-                laurentData.push((laurentCumulative / (index + 1)).toFixed(2));
-                jeanData.push((jeanCumulative / (index + 1)).toFixed(2));
+                playerOneData.push((playerOneCumulative / (index + 1)).toFixed(2));
+                playerTwoData.push((playerTwoCumulative / (index + 1)).toFixed(2));
             });
             
             const ctx = document.getElementById('averageChart').getContext('2d');
@@ -3727,8 +3791,8 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Laurent',
-                            data: laurentData,
+                            label: player1Name,
+                            data: playerOneData,
                             borderColor: '#6b8ec9',
                             backgroundColor: 'rgba(107, 142, 201, 0.1)',
                             borderWidth: 3,
@@ -3741,8 +3805,8 @@
                             pointHoverRadius: 5
                         },
                         {
-                            label: 'Jean Luc',
-                            data: jeanData,
+                            label: player2Name,
+                            data: playerTwoData,
                             borderColor: '#d4a574',
                             backgroundColor: 'rgba(212, 165, 116, 0.1)',
                             borderWidth: 3,
@@ -3818,8 +3882,8 @@
             }
 
             const labels = [];
-            const laurentData = [];
-            const jeanData = [];
+            const playerOneData = [];
+            const playerTwoData = [];
             
             // Parcourir les matches en ordre inverse (du plus ancien au plus récent)
             const sortedMatches = [...matches].reverse();
@@ -3841,16 +3905,16 @@
                     }
                 }
                 // Ancien format : pointsByReprise
-                else if (match.pointsByReprise && match.pointsByReprise.laurent && match.pointsByReprise.jeanLuc) {
-                    emptyL = match.pointsByReprise.laurent.filter(p => p === 0).length;
-                    emptyJ = match.pointsByReprise.jeanLuc.filter(p => p === 0).length;
+                else if (match.pointsByReprise && Object.keys(match.pointsByReprise).length >= 2) {
+                    emptyL = Object.values(match.pointsByReprise)[0].filter(p => p === 0).length;
+                    emptyJ = Object.values(match.pointsByReprise)[1].filter(p => p === 0).length;
                 }
                 
                 const percentL = reprisesCount > 0 ? Math.round((emptyL / reprisesCount) * 100) : 0;
                 const percentJ = reprisesCount > 0 ? Math.round((emptyJ / reprisesCount) * 100) : 0;
                 
-                laurentData.push(percentL);
-                jeanData.push(percentJ);
+                playerOneData.push(percentL);
+                playerTwoData.push(percentJ);
             });
             
             const ctx = document.getElementById('emptyRepriseChart').getContext('2d');
@@ -3860,8 +3924,8 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Laurent',
-                            data: laurentData,
+                            label: player1Name,
+                            data: playerOneData,
                             borderColor: '#6b8ec9',
                             backgroundColor: 'rgba(107, 142, 201, 0.1)',
                             borderWidth: 3,
@@ -3874,8 +3938,8 @@
                             pointHoverRadius: 5
                         },
                         {
-                            label: 'Jean Luc',
-                            data: jeanData,
+                            label: player2Name,
+                            data: playerTwoData,
                             borderColor: '#d4a574',
                             backgroundColor: 'rgba(212, 165, 116, 0.1)',
                             borderWidth: 3,
@@ -3954,12 +4018,12 @@
                 window.scoreDifferenceChartInstance.destroy();
             }
 
-            // Calculer l'évolution du différentiel (Jean Luc - Laurent)
+            // Calculer l'évolution du différentiel (Joueur 2 - Joueur 1)
             const labels = [];
             const differenceData = [];
             
-            let laurentCumulative = 0;
-            let jeanCumulative = 0;
+            let playerOneCumulative = 0;
+            let playerTwoCumulative = 0;
             
             // Parcourir les matches en ordre inverse (du plus ancien au plus récent)
             const sortedMatches = [...matches].reverse();
@@ -3967,11 +4031,11 @@
             sortedMatches.forEach((match) => {
                 labels.push(`P${match.num}`);
                 
-                laurentCumulative += match.s1;
-                jeanCumulative += match.s2;
+                playerOneCumulative += match.s1;
+                playerTwoCumulative += match.s2;
                 
-                // Jean Luc - Laurent (positif = Jean en avance)
-                differenceData.push(jeanCumulative - laurentCumulative);
+                // Joueur 2 - Joueur 1 (positif = joueur 2 en avance)
+                differenceData.push(playerTwoCumulative - playerOneCumulative);
             });
             
             const ctx = document.getElementById('scoreDifferenceChart').getContext('2d');
@@ -3981,7 +4045,7 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Différentiel (Jean Luc - Laurent)',
+                            label: `Différentiel (${player2Name} - ${player1Name})`,
                             data: differenceData,
                             borderColor: '#d4a574',
                             backgroundColor: 'rgba(212, 165, 116, 0.1)',
@@ -4059,13 +4123,13 @@
             matches.forEach(match => {
                 allScores.push({
                     score: match.s1,
-                    joueur: 'Laurent',
+                    joueur: player1Name,
                     matchNum: match.num,
                     date: match.date
                 });
                 allScores.push({
                     score: match.s2,
-                    joueur: 'Jean Luc',
+                    joueur: player2Name,
                     matchNum: match.num,
                     date: match.date
                 });
@@ -4258,8 +4322,8 @@
             const summaryHtml = `
                 <div style="background: var(--light); padding: 12px 16px; border-radius: 10px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; gap: 18px; flex-wrap: wrap; border: 1px solid var(--border);">
                     <span style="font-size: 0.8em; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Moyenne des moyennes</span>
-                    <span style="font-weight: 700; color: var(--laurent-blue);">${player1Name} : ${aa.a1}</span>
-                    <span style="font-weight: 700; color: var(--jean-gold);">${player2Name} : ${aa.a2}</span>
+                    <span style="font-weight: 700; color: var(--player1-blue);">${player1Name} : ${aa.a1}</span>
+                    <span style="font-weight: 700; color: var(--player2-gold);">${player2Name} : ${aa.a2}</span>
                 </div>`;
 
             container.innerHTML = summaryHtml + filtered.map(m => {
@@ -4300,22 +4364,22 @@
                         </div>
                         <div style="text-align: center; min-width: 85px; background: #f5f5f5; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);">
                             <div style="font-size: 0.65em; color: #666; font-weight: 600; margin-bottom: 2px;">Vainqueur</div>
-                            <div style="font-size: 0.75em; font-weight: 600; color: ${m.winner === player1Name ? 'var(--laurent-blue)' : 'var(--jean-gold)'};">${m.winner === player1Name ? '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--laurent-blue);vertical-align:middle;margin-right:3px;"></span>' : '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--jean-gold);vertical-align:middle;margin-right:3px;"></span>'} ${m.winner}</div>
+                            <div style="font-size: 0.75em; font-weight: 600; color: ${m.winner === player1Name ? 'var(--player1-blue)' : 'var(--player2-gold)'};">${m.winner === player1Name ? '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--player1-blue);vertical-align:middle;margin-right:3px;"></span>' : '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--player2-gold);vertical-align:middle;margin-right:3px;"></span>'} ${m.winner}</div>
                         </div>
                         <div style="text-align: center; background: #f5f5f5; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); min-width: 55px;">
                             <div style="font-size: 0.65em; color: #666; font-weight: 600; margin-bottom: 2px;">Score</div>
                             <div style="font-size: 1em; font-weight: 700; display: flex; justify-content: center; gap: 2px;">
-                                <span style="color: ${m.winner === player1Name ? 'var(--laurent-blue)' : '#999'}; min-width: 14px;">${m.s1}</span>
+                                <span style="color: ${m.winner === player1Name ? 'var(--player1-blue)' : '#999'}; min-width: 14px;">${m.s1}</span>
                                 <span style="color: #999;">-</span>
-                                <span style="color: ${m.winner === player2Name ? 'var(--jean-gold)' : '#999'}; min-width: 14px;">${m.s2}</span>
+                                <span style="color: ${m.winner === player2Name ? 'var(--player2-gold)' : '#999'}; min-width: 14px;">${m.s2}</span>
                             </div>
                         </div>
                         <div style="text-align: center; min-width: 90px;">
                             <div style="font-size: 0.65em; color: #666; font-weight: 600; margin-bottom: 2px;">Moyennes</div>
                             <div style="font-size: 0.8em; font-weight: 700; display: flex; justify-content: center; gap: 6px;">
-                                <span style="color: var(--laurent-blue);">${fmtAvg(m.s1, getReprisesCount(m))}</span>
+                                <span style="color: var(--player1-blue);">${fmtAvg(m.s1, getReprisesCount(m))}</span>
                                 <span style="color: #999;">-</span>
-                                <span style="color: var(--jean-gold);">${fmtAvg(m.s2, getReprisesCount(m))}</span>
+                                <span style="color: var(--player2-gold);">${fmtAvg(m.s2, getReprisesCount(m))}</span>
                             </div>
                         </div>
                         <button data-delete-match="${m.num}" style="padding: 7px 5px; background: #f5f5f5; color: #888; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em; transition: all 0.3s ease; min-width: 32px;" onmouseover="event.stopPropagation(); this.style.background='#e8e8e8'; this.style.color='#333';" onmouseout="event.stopPropagation(); this.style.background='#f5f5f5'; this.style.color='#888';" onclick="event.stopPropagation();">
@@ -4327,16 +4391,16 @@
                     ${m.bestSeries ? `
                     <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 10px; align-items: center; padding-top: 8px; border-top: 1px solid #eee;">
                         <div style="text-align: center; font-size: 0.9em; font-weight: 600;"><span aria-hidden="true" style="color: #e67e22;">🔥</span></div>
-                        <div style="text-align: center; background: rgba(107, 142, 201, 0.08); padding: 6px 8px; border-radius: 4px; border-left: 3px solid var(--laurent-blue);">
-                            <div style="font-size: 0.65em; color: #666; font-weight: 600; margin-bottom: 2px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--laurent-blue);vertical-align:middle;margin-right:3px;"></span> Séries</div>
-                            <div style="font-size: 0.8em; font-weight: 600; color: var(--laurent-blue);">
-                                ${(() => { const k = Object.keys(m.bestSeries).find(x => x !== 'jeanLuc'); const arr = k ? m.bestSeries[k] : null; return arr && arr.length > 0 ? arr.slice(0, 3).join(' • ') : '-'; })()}
+                        <div style="text-align: center; background: rgba(107, 142, 201, 0.08); padding: 6px 8px; border-radius: 4px; border-left: 3px solid var(--player1-blue);">
+                            <div style="font-size: 0.65em; color: #666; font-weight: 600; margin-bottom: 2px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--player1-blue);vertical-align:middle;margin-right:3px;"></span> Séries</div>
+                            <div style="font-size: 0.8em; font-weight: 600; color: var(--player1-blue);">
+                                ${(() => { const k = Object.keys(m.bestSeries)[0]; const arr = k ? m.bestSeries[k] : null; return arr && arr.length > 0 ? arr.slice(0, 3).join(' • ') : '-'; })()}
                             </div>
                         </div>
-                        <div style="text-align: center; background: rgba(212, 165, 116, 0.08); padding: 6px 8px; border-radius: 4px; border-left: 3px solid var(--jean-gold);">
-                            <div style="font-size: 0.65em; color: #666; font-weight: 600; margin-bottom: 2px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--jean-gold);vertical-align:middle;margin-right:3px;"></span> Séries</div>
-                            <div style="font-size: 0.8em; font-weight: 600; color: var(--jean-gold);">
-                                ${m.bestSeries.jeanLuc && m.bestSeries.jeanLuc.length > 0 ? m.bestSeries.jeanLuc.slice(0, 3).join(' • ') : '-'}
+                        <div style="text-align: center; background: rgba(212, 165, 116, 0.08); padding: 6px 8px; border-radius: 4px; border-left: 3px solid var(--player2-gold);">
+                            <div style="font-size: 0.65em; color: #666; font-weight: 600; margin-bottom: 2px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--player2-gold);vertical-align:middle;margin-right:3px;"></span> Séries</div>
+                            <div style="font-size: 0.8em; font-weight: 600; color: var(--player2-gold);">
+                                ${(() => { const k2 = Object.keys(m.bestSeries)[1]; const arr2 = k2 ? m.bestSeries[k2] : null; return arr2 && arr2.length > 0 ? arr2.slice(0, 3).join(' • ') : '-'; })()}
                             </div>
                         </div>
                     </div>
