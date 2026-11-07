@@ -171,7 +171,7 @@ function parseDate(str) {
 
 // ─── clés joueurs (indépendant des noms) ─────────────────────────────────────
 
-// "JEAN LUC" -> "jeanLuc", "FRANÇOIS" -> "francois"
+// "PAUL DURAND" -> "paulDurand", "ÉMILE" -> "emile"
 function toKey(name) {
     const w = String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().split(/\s+/);
     return w.map((x,i)=> i ? x.charAt(0).toUpperCase()+x.slice(1) : x).join('');
