@@ -585,7 +585,8 @@ function openingSection(matches, p1, p2, changerIdx) {
 }
 
 function generateReport() {
-    const matches = data.matches;
+    // Ordre normalisé : du plus récent au plus ancien (le tracker enregistre les parties dans l'ordre inverse)
+    const matches = [...data.matches].sort((x, y) => y.num - x.num);
     const players = data.players;
     const p1 = players.player1;
     const p2 = players.player2;
