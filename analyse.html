@@ -483,28 +483,9 @@ function matchRef(m) {
 
 // ─── GÉNÉRATION DU RAPPORT ───────────────────────────────────────────────────
 
-// ── Ouverture : qui commence (déduit des changements de billard) ────────────
-// Le joueur « changerIdx » ouvre au changement de billard ; ensuite l'ouverture alterne.
-function deduceOpeners(matches, p1, p2, changerIdx) {
-    const asc = [...matches].sort((a, b) => a.num - b.num);
-    const res = new Map();
-    let prevBillard = null, prev = null;
-    asc.forEach(m => {
-        let s;
-        if (m.firstPlayer === p1) s = 0;
-        else if (m.firstPlayer === p2) s = 1;
-        else if (prevBillard === null || m.billard !== prevBillard) s = changerIdx;
-        else s = prev === 0 ? 1 : 0;
-        res.set(m.num, s);
-        prevBillard = m.billard;
-        prev = s;
-    });
-    return res;
-}
-
-function openingSection(matches, p1, p2, changerIdx) {
+// ── Ouverture : utilise uniquement le premier joueur enregistré dans chaque partie ──
+function openingSection(matches, p1, p2) {
     const names = [p1, p2];
-    const openers = deduceOpeners(matches, p1, p2, changerIdx);
     const mk = () => ({ n: 0, ok: 0, sum: 0, max: 0, dist: [0, 0, 0, 0], wins: 0 });
     const add = (a, p, won) => {
         a.n++; a.sum += p;
@@ -525,8 +506,8 @@ function openingSection(matches, p1, p2, changerIdx) {
         const [k1, k2] = pKeys(r, p1, p2);
         if (!k1 || !k2) return;
         const pts = [Number(r[k1]) || 0, Number(r[k2]) || 0];
-        const o = openers.get(m.num);
-        if (o === undefined) return;
+        const o = m.firstPlayer === p1 ? 0 : (m.firstPlayer === p2 ? 1 : -1);
+        if (o < 0) return;   // premier joueur non enregistré : partie non comptée
         used++;
         const prevMax = st[o].max;
         add(st[o], pts[o], m.winner === names[o]);
@@ -548,7 +529,14 @@ function openingSection(matches, p1, p2, changerIdx) {
     let r = '';
     r += 'OUVERTURE — POINT DE DÉPART\n';
     r += SEP + '\n\n';
-    r += `  Le joueur qui ouvre entame la partie : sa 1re reprise est la « série d’entame » (ou série de départ).   (${used} parties analysées)\n\n`;
+    r += `  Le joueur qui ouvre entame la partie : sa 1re reprise est la « série d’entame » (ou série de départ).   (${used} parties analysées sur ${matches.length})\n`;
+    if (used < matches.length) r += `  Les parties sans premier joueur enregistré ne sont pas comptées.\n`;
+    r += '\n';
+    if (used === 0) {
+        r += `  Aucune partie n'indique encore qui ouvre : importez un fichier dont les parties contiennent le premier joueur.\n\n`;
+        return r;
+    }
+
 
     // 1. Taux de réussite du point de départ
     r += 'TAUX DE RÉUSSITE DU POINT DE DÉPART\n';
@@ -754,7 +742,7 @@ function generateReport() {
     r += '\n';
 
     // ── Ouverture ─────────────────────────────────────────────────────────────
-    r += openingSection(matches, p1, p2, 1); // au changement de billard, le joueur 2 ouvre
+    r += openingSection(matches, p1, p2);
 
     // ── Régularité & constance ───────────────────────────────────────────────
     r += 'RÉGULARITÉ & CONSTANCE\n';
