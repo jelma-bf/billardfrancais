@@ -42,6 +42,8 @@
             --success: #8bc88b;
             --danger: #d9a8a8;
             --info: #a8c5d9;
+            --secondary: #5d7287;   /* accent sombre (titres, onglet actif, filtre actif) */
+            --accent: #d4a574;      /* accent doré (icônes de titre, bouton secondaire) */
         }
 
         body {
@@ -160,7 +162,7 @@
         input:focus, select:focus {
             outline: none;
             border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(45, 95, 63, 0.1);
+            box-shadow: 0 0 0 3px rgba(74, 90, 106, 0.1);
         }
 
         .input-group {
@@ -212,7 +214,7 @@
         }
 
         .score-display {
-            background: linear-gradient(135deg, var(--secondary) 0%, #1e4620 100%);
+            background: linear-gradient(135deg, var(--secondary) 0%, #4a5a6a 100%);
             color: white;
             padding: 30px;
             border-radius: 10px;
@@ -277,13 +279,13 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--secondary) 0%, #1e4620 100%);
+            background: linear-gradient(135deg, var(--player1-blue) 0%, #5a7db8 100%);
             color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(45, 95, 63, 0.3);
+            box-shadow: 0 6px 20px rgba(107, 142, 201, 0.35);
         }
 
         .btn-secondary {
@@ -399,7 +401,7 @@
         }
 
         .match-number {
-            background: linear-gradient(135deg, var(--secondary) 0%, #1e4620 100%);
+            background: linear-gradient(135deg, var(--secondary) 0%, #4a5a6a 100%);
             color: white;
             width: 50px;
             height: 50px;
@@ -496,7 +498,7 @@
         }
 
         .stat-box {
-            background: linear-gradient(135deg, var(--secondary) 0%, #1e4620 100%);
+            background: linear-gradient(135deg, var(--secondary) 0%, #4a5a6a 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
@@ -792,10 +794,36 @@
 </head>
 <body>
         <!-- Setup Screen - Configuration initiale des joueurs -->
+        <!-- Écran d'entrée : continuer / nouveaux joueurs / importer -->
+        <div id="entryScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%); display: none; align-items: center; justify-content: center; z-index: 3100;">
+            <div style="background: white; padding: 40px 50px; border-radius: 25px; text-align: center; width: 90%; max-width: 560px; box-sizing: border-box; max-height: 94vh; overflow-y: auto; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);">
+                <div style="font-size: 3em; margin-bottom: 8px;" aria-hidden="true">🎱</div>
+                <h1 style="margin: 0 0 6px 0; color: var(--primary);">Billard</h1>
+                <p id="entrySummary" style="color: #666; margin: 0 0 26px 0;"></p>
+
+                <button id="entryContinueBtn" class="btn-primary" onclick="entryContinue()" style="width: 100%; padding: 16px; font-size: 1.05em; margin-bottom: 12px;">▶ Continuer</button>
+
+                <button type="button" onclick="entryNewPlayers()" style="width: 100%; padding: 14px; background: white; color: var(--primary); border: 2px solid var(--border); border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; margin-bottom: 12px;">
+                    <span aria-hidden="true">👥</span> Nouveaux joueurs
+                </button>
+                <p style="margin: -6px 0 14px 0; font-size: 0.8em; color: #999;">Démarre un nouvel historique, enregistré dans un nouveau fichier JSON</p>
+
+                <button type="button" onclick="document.getElementById('setupImportInput').click()" style="width: 100%; padding: 14px; background: white; color: var(--primary); border: 2px solid var(--border); border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer;">
+                    <span aria-hidden="true">📥</span> Importer un fichier JSON
+                </button>
+                <p id="entryImportHint" style="margin: 8px 0 0 0; font-size: 0.8em; color: #999;">Remplace l'historique actuel par celui du fichier</p>
+                <input type="file" id="setupImportInput" accept=".json" style="display: none;" onchange="importFromSetup(event)" />
+            </div>
+        </div>
+
         <div id="setupScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--player1-blue) 0%, var(--player2-gold) 100%); display: flex; align-items: center; justify-content: center; z-index: 3000;">
             <div style="background: white; padding: 80px 60px; border-radius: 25px; text-align: center; max-width: 550px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3); animation: slideUp 0.5s ease;">
                 <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5em; color: var(--primary); margin-bottom: 10px;">🎱 Billard</h1>
                 <p style="color: #666; margin-bottom: 40px; font-size: 1.1em; font-weight: 500;">Configurer les joueurs</p>
+                <div id="setupReplaceBox" style="display: none; text-align: left; background: #fff7e6; border: 1px solid #f0d9a8; border-radius: 10px; padding: 12px 14px; margin: 0 0 18px 0; font-size: 0.9em; color: #6b5a2a; line-height: 1.45;">
+                    <div id="setupReplaceText"></div>
+                    <button type="button" onclick="exportToFolder()" style="margin-top: 10px; padding: 10px 16px; background: white; color: var(--primary); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">💾 Exporter les données actuelles</button>
+                </div>
                 
                 <div style="background: var(--light); padding: 30px; border-radius: 15px; text-align: left;">
                     <div class="form-group" style="margin-bottom: 25px;">
@@ -813,19 +841,7 @@
                     </button>
                 </div>
 
-                <!-- Séparateur -->
-                <div style="display: flex; align-items: center; gap: 12px; margin: 24px 0 0 0;">
-                    <div style="flex: 1; height: 1px; background: #ddd;"></div>
-                    <span style="color: #aaa; font-size: 0.85em; font-weight: 500;">ou</span>
-                    <div style="flex: 1; height: 1px; background: #ddd;"></div>
-                </div>
-
-                <!-- Bouton import JSON -->
-                <button onclick="document.getElementById('setupImportInput').click()" style="width: 100%; margin-top: 16px; padding: 13px; background: white; border: 2px dashed #bbb; border-radius: 8px; color: #666; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--player1-blue)'; this.style.color='var(--player1-blue)'; this.style.background='#f0f4fc';" onmouseout="this.style.borderColor='#bbb'; this.style.color='#666'; this.style.background='white';">
-                    <span aria-hidden="true">📥</span> Importer un fichier JSON existant
-                </button>
-                <input type="file" id="setupImportInput" accept=".json" style="display: none;" onchange="importFromSetup(event)" />
-                <p style="color: #aaa; font-size: 0.8em; margin-top: 10px;">Charge l'historique et les joueurs depuis un fichier JSON</p>
+                <button type="button" id="setupBackBtn" onclick="setupBack()" style="display: none; margin-top: 16px; padding: 10px 18px; background: transparent; color: #666; border: none; font-size: 0.95em; cursor: pointer;">← Retour</button>
             </div>
         </div>
 
@@ -1398,13 +1414,18 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
 
                     if (!data.players || !data.matches) {
                         alert('Format de fichier invalide. Le fichier JSON doit contenir les clés "players" et "matches".');
                         return;
+                    }
+
+                    if (matches.length > 0 && player1Name) {
+                        const ok = await askConfirm('Remplacer les ' + matches.length + ' parties de ' + player1Name + ' · ' + player2Name + ' par les ' + data.matches.length + ' parties de ' + data.players.player1 + ' · ' + data.players.player2 + ' ?\n\nCette action est définitive : exportez d\u2019abord les données actuelles si vous voulez les garder.');
+                        if (!ok) return;
                     }
 
                     // Charger les données via la fonction existante
@@ -1422,7 +1443,11 @@
                         displayMatches();
                         updateChangePlayersButtonVisibility();
 
-                        // Fermer le setup et aller au splash
+                        // Fermer l'entrée / le setup et aller au splash
+                        replaceMode = false;
+                        document.getElementById('setupReplaceBox').style.display = 'none';
+                        document.getElementById('setupBackBtn').style.display = 'none';
+                        document.getElementById('entryScreen').style.display = 'none';
                         document.getElementById('setupScreen').style.display = 'none';
                         document.getElementById('splashScreen').style.display = 'flex';
                     }
@@ -1435,7 +1460,7 @@
             event.target.value = '';
         }
 
-        function savePlayersSetup() {
+        async function savePlayersSetup() {
             const player1 = document.getElementById("setupPlayer1").value.trim();
             const player2 = document.getElementById("setupPlayer2").value.trim();
             
@@ -1449,6 +1474,19 @@
                 return;
             }
             
+            if (replaceMode && matches.length > 0) {
+                const ok = await askConfirm('Effacer les ' + matches.length + ' parties de ' + player1Name + ' · ' + player2Name + ' et commencer avec ' + player1 + ' · ' + player2 + ' ?\n\nCette action est définitive : exportez d\u2019abord les données actuelles si vous voulez les garder.');
+                if (!ok) return;
+            }
+            if (replaceMode) {
+                matches = [];
+                localStorage.setItem('billard_matches', JSON.stringify(matches));
+                localStorage.removeItem('billard_matchStartTime');
+                replaceMode = false;
+                document.getElementById('setupReplaceBox').style.display = 'none';
+                document.getElementById('setupBackBtn').style.display = 'none';
+            }
+
             player1Name = player1;
             player2Name = player2;
             
@@ -1466,6 +1504,7 @@
             updatePlayerLabels();
             updateStats();
             displayMatches();
+            updateChangePlayersButtonVisibility();
         }
         
         // Réinitialiser et changer les noms des joueurs
@@ -1484,6 +1523,7 @@
             // Afficher l'écran de configuration
             document.getElementById("splashScreen").style.display = "none";
             document.getElementById("setupScreen").style.display = "flex";
+            document.getElementById("setupBackBtn").style.display = "inline-block";
             
             // Focus sur le premier input
             setTimeout(() => {
@@ -1491,6 +1531,53 @@
             }, 100);
         }
         
+        // ── Écran d'entrée : continuer / nouveaux joueurs / importer ──
+        let replaceMode = false;   // vrai quand on démarre avec de nouveaux joueurs alors qu'un historique existe
+
+        function showEntryScreen() {
+            const has = !!(player1Name && player2Name);
+            const n = matches.length;
+            document.getElementById('splashScreen').style.display = 'none';
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('entrySummary').textContent = has
+                ? player1Name + ' · ' + player2Name + ' — ' + n + ' partie' + (n > 1 ? 's' : '') + ' enregistrée' + (n > 1 ? 's' : '')
+                : 'Aucun joueur enregistré sur cet appareil';
+            const cont = document.getElementById('entryContinueBtn');
+            cont.style.display = has ? 'block' : 'none';
+            cont.textContent = '▶ Continuer avec ' + player1Name + ' et ' + player2Name;
+            document.getElementById('entryImportHint').textContent = has
+                ? "Remplace l'historique actuel par celui du fichier"
+                : "Charge l'historique et les joueurs depuis un fichier JSON";
+            document.getElementById('entryScreen').style.display = 'flex';
+        }
+
+        function entryContinue() {
+            document.getElementById('entryScreen').style.display = 'none';
+            document.getElementById('splashScreen').style.display = 'flex';
+            updateChangePlayersButtonVisibility();
+        }
+
+        function entryNewPlayers() {
+            replaceMode = true;
+            const n = matches.length;
+            document.getElementById('entryScreen').style.display = 'none';
+            document.getElementById('setupPlayer1').value = '';
+            document.getElementById('setupPlayer2').value = '';
+            document.getElementById('setupReplaceText').textContent = 'Les ' + n + ' partie' + (n > 1 ? 's' : '') + ' de ' + player1Name + ' · ' + player2Name + ' seront retirées de cet appareil dès que vous validez les nouveaux noms. Exportez-les d\u2019abord si vous voulez les garder.';
+            document.getElementById('setupReplaceBox').style.display = n > 0 ? 'block' : 'none';
+            document.getElementById('setupBackBtn').style.display = 'inline-block';
+            document.getElementById('setupScreen').style.display = 'flex';
+            setTimeout(() => document.getElementById('setupPlayer1').focus(), 100);
+        }
+
+        function setupBack() {
+            replaceMode = false;
+            document.getElementById('setupReplaceBox').style.display = 'none';
+            document.getElementById('setupBackBtn').style.display = 'none';
+            document.getElementById('setupScreen').style.display = 'none';
+            showEntryScreen();
+        }
+
         // Fonction pour initialiser l'app au démarrage
         function initializeApp() {
             const storedPlayers = localStorage.getItem("billard_players");
@@ -1505,10 +1592,10 @@
                 document.getElementById("splashScreen").style.display = "flex";
                 updatePlayerLabels();
                 updateChangePlayersButtonVisibility();
+                if (location.hash !== '#stats') showEntryScreen();
             } else {
-                // Afficher l'écran de setup
-                document.getElementById("setupScreen").style.display = "flex";
-                document.getElementById("splashScreen").style.display = "none";
+                // Premier lancement : écran d'entrée (nouveaux joueurs ou import)
+                showEntryScreen();
             }
         }
         
@@ -4147,7 +4234,7 @@
             tbody.innerHTML = topScores.map((score, index) => `
                 <tr>
                     <td style="padding: 12px; border-top: 1px solid var(--border); text-align: center;">
-                        <span style="display: inline-block; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary) 0%, #1e4620 100%); color: white; font-weight: 700; line-height: 28px;">
+                        <span style="display: inline-block; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary) 0%, #4a5a6a 100%); color: white; font-weight: 700; line-height: 28px;">
                             ${index + 1}
                         </span>
                     </td>
