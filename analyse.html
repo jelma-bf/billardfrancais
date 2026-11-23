@@ -63,6 +63,25 @@
             max-height: 90vh;
             overflow-y: auto;
         }
+        .report h2 {
+            color: #4a9eff;
+            font-size: 1.25em;
+            font-weight: 700;
+            letter-spacing: .5px;
+            border-bottom: 2px solid #4a9eff;
+            padding-bottom: 6px;
+            margin: 26px 0 12px;
+        }
+        .report h2:first-child { margin-top: 0; }
+        .report h3 {
+            color: #8bc48b;
+            font-size: 1.05em;
+            font-weight: 700;
+            border-left: 3px solid #8bc48b;
+            padding-left: 8px;
+            margin: 18px 0 8px;
+        }
+        .report .sp { height: .55em; }
         .error {
             background: #5a2c2c;
             color: #ff8888;
@@ -144,8 +163,8 @@ function loadFromTracker(silent) {
 
 // ─── utilitaires ─────────────────────────────────────────────────────────────
 
-const SEP  = '='.repeat(120);
-const SEP2 = '─'.repeat(120);
+const SEP  = '='.repeat(70);
+const SEP2 = '─'.repeat(70);
 
 function pad(str, w, right=false) {
     str = String(str);
@@ -527,9 +546,10 @@ function openingSection(matches, p1, p2) {
     const both = f => [f(st[0]), f(st[1])];
 
     let r = '';
-    r += 'OUVERTURE — POINT DE DÉPART\n';
+    r += '■ OUVERTURE — POINT DE DÉPART\n';
     r += SEP + '\n\n';
-    r += `  Le joueur qui ouvre entame la partie : sa 1re reprise est la « série d’entame » (ou série de départ).   (${used} parties analysées sur ${matches.length})\n`;
+    r += `  Le joueur qui ouvre joue la « série d’entame » = sa 1re reprise.\n`;
+    r += `  Parties analysées : ${used} sur ${matches.length}.\n`;
     if (used < matches.length) r += `  Les parties sans premier joueur enregistré ne sont pas comptées.\n`;
     r += '\n';
     if (used === 0) {
@@ -539,7 +559,7 @@ function openingSection(matches, p1, p2) {
 
 
     // 1. Taux de réussite du point de départ
-    r += 'TAUX DE RÉUSSITE DU POINT DE DÉPART\n';
+    r += '▸ TAUX DE RÉUSSITE DU POINT DE DÉPART\n';
     r += SEP2 + '\n';
     r += `  Point de départ réussi = au moins 1 point dans la série d’entame.\n\n`;
     r += line('', names[0], names[1]);
@@ -553,7 +573,7 @@ function openingSection(matches, p1, p2) {
     r += '\n';
 
     // 2. Analyse des séries de départ
-    r += 'SÉRIE D’ENTAME — POINTS MARQUÉS À L’OUVERTURE\n';
+    r += '▸ SÉRIE D’ENTAME — POINTS MARQUÉS À L’OUVERTURE\n';
     r += SEP2 + '\n';
     r += line('', names[0], names[1]);
     r += line('Moyenne de la série d’entame (toutes parties)', ...both(a => a.n ? fmt(a.sum / a.n, 2) : '–'));
@@ -599,7 +619,7 @@ function generateReport() {
 
     // ── En-tête ──────────────────────────────────────────────────────────────
     r += SEP + '\n';
-    r += 'ÉVOLUTION DES PERFORMANCES AU BILLARD\n';
+    r += '■ ÉVOLUTION DES PERFORMANCES AU BILLARD\n';
     r += `${p1} vs ${p2}\n`;
     const dates = matches.map(m=>parseDate(m.date)).filter(d=>!isNaN(d));
     if (dates.length) {
@@ -609,7 +629,7 @@ function generateReport() {
     r += SEP + '\n\n';
 
     // ── Résumé global ────────────────────────────────────────────────────────
-    r += `RÉSUMÉ GLOBAL — ${matches.length} PARTIES\n`;
+    r += `■ RÉSUMÉ GLOBAL — ${matches.length} PARTIES\n`;
     r += SEP + '\n\n';
 
     const colW = 42;
@@ -624,7 +644,7 @@ function generateReport() {
     r += '\n';
 
     // ── Petit vs Grand ────────────────────────────────────────────────────────
-    r += 'COMPARAISON PETIT vs GRAND BILLARD\n';
+    r += '■ COMPARAISON PETIT vs GRAND BILLARD\n';
     r += SEP + '\n\n';
 
     function verdictLine(d) {
@@ -644,7 +664,7 @@ function generateReport() {
     function sectionBillard(label, ms, s) {
         if (!ms.length) return '';
         const d = calcDomination(ms, p1, p2);
-        let t = `${label} — ${ms.length} parties (${fmt(ms.length/matches.length*100)}% du total)\n`;
+        let t = `▸ ${label} — ${ms.length} parties (${fmt(ms.length/matches.length*100)}% du total)\n`;
         t += SEP2 + '\n';
         t += verdictLine(d) + '\n';
         t += `${pad('',colW)}${pad(p1,20)}${pad(p2,20)}\n`;
@@ -669,7 +689,7 @@ function generateReport() {
     if (petit.length && grand.length) {
         const pr1 = petitS.p1Wins/petitS.n*100, gr1 = grandS.p1Wins/grandS.n*100;
         const diff1 = gr1 - pr1; // >0 : p1 relativement meilleur au GB
-        r += 'SPÉCIALITÉ — taux de victoire selon le billard\n';
+        r += '▸ SPÉCIALITÉ — taux de victoire selon le billard\n';
         r += SEP2 + '\n';
         r += `${pad('',colW)}${pad('Petit Billard',20)}${pad('Grand Billard',20)}${pad('Écart GB-PB',14)}\n`;
         r += `${pad(p1,colW)}${pad(fmt(pr1)+'%',20)}${pad(fmt(gr1)+'%',20)}${pad((diff1>0?'+':'')+fmt(diff1)+' pts',14)}\n`;
@@ -680,12 +700,14 @@ function generateReport() {
             const better = diff1 > 0 ? p1 : p2;
             const other = diff1 > 0 ? p2 : p1;
             const table = diff1 > 0 ? 'Grand Billard' : 'Petit Billard';
-            r += `  → ${better} est relativement plus à l'aise au ${table} ; ${other} domine davantage sur l'autre billard (${fmt(Math.abs(diff1))} pts d'écart${Math.abs(diff1) < 10 ? ', écart modeste à prendre avec prudence vu le nombre de parties' : ''}).\n\n`;
+            const nuance = Math.abs(diff1) < 10 ? ' écart modeste, donc à prendre avec prudence.' : '';
+            r += `  → ${better} est plus à l'aise au ${table}.\n`;
+            r += `  → ${other} domine davantage sur l'autre billard (${fmt(Math.abs(diff1))} pts d'écart).${nuance}\n\n`;
         }
     }
 
     // ── Records & extrêmes ────────────────────────────────────────────────────
-    r += 'RECORDS & EXTRÊMES\n';
+    r += '■ RECORDS & EXTRÊMES\n';
     r += SEP + '\n\n';
 
     function billardType(m) { return m ? (m.billard === 'Grand Billard' ? 'GB' : 'PB') : ''; }
@@ -727,7 +749,7 @@ function generateReport() {
     r += '\n';
 
     // ── Top séries absolues ──────────────────────────────────────────────────
-    r += 'TOP 5 MEILLEURES SÉRIES (toutes parties)\n';
+    r += '■ TOP 5 MEILLEURES SÉRIES (toutes parties)\n';
     r += SEP + '\n\n';
     r += `${pad(p1,60)}${p2}\n`;
     r += SEP2 + '\n';
@@ -745,7 +767,7 @@ function generateReport() {
     r += openingSection(matches, p1, p2);
 
     // ── Régularité & constance ───────────────────────────────────────────────
-    r += 'RÉGULARITÉ & CONSTANCE\n';
+    r += '■ RÉGULARITÉ & CONSTANCE\n';
     r += SEP + '\n\n';
     r += `  L'écart-type mesure la variabilité des scores: plus il est faible, plus le joueur est régulier.\n\n`;
     r += `${pad('',colW)}${pad(p1,20)}${pad(p2,20)}\n`;
@@ -761,7 +783,7 @@ function generateReport() {
 
     // ── Durée & rythme ────────────────────────────────────────────────────────
     if (gs.durations.length > 0) {
-        r += 'DURÉE & RYTHME DE JEU\n';
+        r += '■ DURÉE & RYTHME DE JEU\n';
         r += SEP + '\n\n';
         r += `${pad('',colW)}${pad(p1,20)}${pad(p2,20)}\n`;
         r += SEP2 + '\n';
@@ -772,7 +794,7 @@ function generateReport() {
     }
 
     // ── Séquences & séries de victoires ──────────────────────────────────────
-    r += 'SÉQUENCES & SÉRIES DE VICTOIRES\n';
+    r += '■ SÉQUENCES & SÉRIES DE VICTOIRES\n';
     r += SEP + '\n\n';
     r += `${p1}: plus longue série de victoires consécutives: ${seq.p1MaxStreak}`;
     if (seq.p1MaxStreakEnd) r += ` (terminée à la ${matchRef(seq.p1MaxStreakEnd)})`;
@@ -783,7 +805,7 @@ function generateReport() {
     r += `Série en cours: ${seq.currentStreak} victoire(s) consécutive(s) pour ${seq.currentWinner}\n\n`;
 
     // ── Tendances récentes ────────────────────────────────────────────────────
-    r += 'ÉVOLUTION RÉCENTE\n';
+    r += '■ ÉVOLUTION RÉCENTE\n';
     r += SEP + '\n\n';
     r += `${pad('',colW)}${pad(p1,26)}${pad(p2,26)}\n`;
     r += SEP2 + '\n';
@@ -802,7 +824,7 @@ function generateReport() {
     r += '\n';
 
     // ── Progression ──────────────────────────────────────────────────────────
-    r += 'ANALYSE DE PROGRESSION (premier quart vs dernier quart)\n';
+    r += '■ ANALYSE DE PROGRESSION (premier quart vs dernier quart)\n';
     r += SEP + '\n\n';
     const q = Math.ceil(matches.length/4);
     r += `  Basé sur les ${q} premières et les ${q} dernières parties.\n\n`;
@@ -828,7 +850,17 @@ function generateReport() {
 }
 
 function displayReport(report) {
-    document.getElementById('content').innerHTML = `<div class="report">${escapeHtml(report)}</div>`;
+    // Rendu HTML : titres explicites (■ / ▸), séparateurs texte remplacés par des bordures
+    const lines = report.split('\n');
+    let html = '';
+    for (const t of lines) {
+        const tt = t.trim();
+        if (/^[=\u2500]+$/.test(tt)) continue;            // lignes de séparation
+        if (tt.startsWith('■ ')) { html += '<h2>' + escapeHtml(tt.slice(2)) + '</h2>'; continue; }
+        if (tt.startsWith('▸ ')) { html += '<h3>' + escapeHtml(tt.slice(2)) + '</h3>'; continue; }
+        html += t ? '<div>' + escapeHtml(t) + '</div>' : '<div class="sp"></div>';
+    }
+    document.getElementById('content').innerHTML = '<div class="report">' + html + '</div>';
 }
 function escapeHtml(text) {
     const d = document.createElement('div');
